@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f0d14">
+<title>DM Satchel</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+/* Layout: full-screen tool frame with a fixed tab bar at the bottom, thumb-reachable on a phone. */
+:root{--bar:#0f0d14;--bar2:#1a1722;--ink:#ece6f5;--muted:#8f88a0;--gold:#e8b44c;--glow:#5ef0d6;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bar);font-family:system-ui,"Segoe UI",Roboto,sans-serif}
+body{display:flex;flex-direction:column}
+main{flex:1;position:relative;min-height:0;margin-top:env(safe-area-inset-top,0px)}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:var(--bar)}
+iframe[hidden]{display:none}
+nav{display:grid;grid-template-columns:repeat(5,1fr);background:var(--bar2);border-top:1px solid #342e40;
+  padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav button{all:unset;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px 9px;color:var(--muted);font-size:.7rem;font-weight:600;letter-spacing:.02em;text-align:center}
+nav button svg{width:24px;height:24px}
+nav button[aria-current=page]{color:var(--glow)}
+nav button[aria-current=page] svg{filter:drop-shadow(0 0 6px #5ef0d688)}
+nav button:focus-visible{outline:2px solid var(--glow);outline-offset:-4px;border-radius:6px}
+</style>
+</head>
+<body>
+<main id="main"></main>
+<nav id="nav" aria-label="Tools"></nav>
+<script>
+const TOOLS=[
+ ["mysterybox","Box",'<path d="M3 9h18v11H3zM2 5h20v4H2zM12 5v15" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 5C9 1 5 3 7 5M12 5c3-4 7-2 5 0" fill="none" stroke="currentColor" stroke-width="2"/>'],
+ ["turns","Turns",'<path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="4" cy="6" r="1.6" fill="currentColor"/>'],
+ ["encounter","Encounter",'<path d="M12 2 21 7v10l-9 5-9-5V7z M12 2v20 M3 7l18 10 M21 7 3 17" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>'],
+ ["token","Tokens",'<circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><circle cx="12" cy="10" r="3" fill="currentColor"/><path d="M6.5 18c1.5-3 9.5-3 11 0" fill="none" stroke="currentColor" stroke-width="2"/>'],
+ ["funnel","Funnel",'<path d="M3 4h18l-7 8v6l-4 2v-8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>']
+];
+const frames={};let cur=null;
+function show(key){
+  if(!frames[key]){const f=document.createElement("iframe");f.src="tools/"+key+".html";f.title=TOOLS.find(t=>t[0]===key)[1];
+    f.setAttribute("allow","clipboard-write");document.getElementById("main").appendChild(f);frames[key]=f}
+  Object.entries(frames).forEach(([k,f])=>f.hidden=k!==key);
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-current",b.dataset.k===key?"page":"false"));
+  cur=key;try{localStorage.setItem("satchel-tab",key)}catch(e){}
+  if(location.hash!=="#"+key)history.replaceState(null,"","#"+key);
+}
+document.getElementById("nav").innerHTML=TOOLS.map(([k,n,svg])=>`<button data-k="${k}"><svg viewBox="0 0 24 24">${svg}</svg>${n}</button>`).join("");
+document.getElementById("nav").onclick=e=>{const b=e.target.closest("button");if(b)show(b.dataset.k)};
+let start=location.hash.slice(1);try{start=start||localStorage.getItem("satchel-tab")}catch(e){}
+show(TOOLS.some(t=>t[0]===start)?start:"mysterybox");
+if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+</script>
+</body>
+</html>

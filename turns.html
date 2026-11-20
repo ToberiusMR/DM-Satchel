@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Ironspine Turn Ladder</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Barlow:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a single column "ladder" of tiles under a round counter, with the add form beside it on wide screens and above it on phones. */
+:root{
+  --bg:#f1eff4; --panel:#ffffff; --panel2:#f6f4f9; --ink:#1c1824; --muted:#6a6377; --rule:#d9d4e2;
+  --gold:#a8761c; --glow:#0f8f7c; --glow-soft:#0f8f7c1f; --on-glow:#ffffff;
+  --hero:#2f6fd0; --foe:#c23b3b; --ally:#3d9a54; --down:#8a8396;
+  --display:"Uncial Antiqua", "Papyrus", Georgia, serif;
+  --body:"Barlow", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f0d14; --panel:#1a1722; --panel2:#221e2c; --ink:#ece6f5; --muted:#a49cb3; --rule:#342e40;
+  --gold:#e8b44c; --glow:#5ef0d6; --glow-soft:#5ef0d61a; --on-glow:#06221d;
+  --hero:#6aa5ff; --foe:#ff6b6b; --ally:#6bd385; --down:#6c6578; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f0d14; --panel:#1a1722; --panel2:#221e2c; --ink:#ece6f5; --muted:#a49cb3; --rule:#342e40;
+  --gold:#e8b44c; --glow:#5ef0d6; --glow-soft:#5ef0d61a; --on-glow:#06221d;
+  --hero:#6aa5ff; --foe:#ff6b6b; --ally:#6bd385; --down:#6c6578; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.4;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:18px 40px}
+.wrap{max-width:980px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:12px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(1.8rem,5vw,2.6rem);margin:0;line-height:1;color:var(--gold)}
+.sub{margin:4px 0 0;color:var(--muted)}
+.main{display:grid;grid-template-columns:300px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:760px){.main{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.card h2{font-family:var(--display);font-weight:400;font-size:1.1rem;margin:0;color:var(--gold)}
+.lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:4px}
+button,input,select{font:inherit;color:var(--ink)}
+input,select{background:var(--panel2);border:1px solid var(--rule);border-radius:5px;padding:8px 9px}
+button{cursor:pointer;border:1px solid var(--rule);background:var(--panel2);border-radius:6px;padding:8px 12px;font-weight:500}
+button:hover:not(:disabled){border-color:var(--glow)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--glow);border-color:var(--glow);color:var(--on-glow);font-weight:700}
+:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.row .field{flex:1 1 80px;min-width:0}
+.seg{display:flex;gap:4px}.seg button{flex:1;padding:7px 6px;font-size:.9rem}
+.seg button[aria-pressed=true][data-v=hero]{border-color:var(--hero);color:var(--hero)}
+.seg button[aria-pressed=true][data-v=foe]{border-color:var(--foe);color:var(--foe)}
+.seg button[aria-pressed=true][data-v=ally]{border-color:var(--ally);color:var(--ally)}
+.quick{display:flex;flex-wrap:wrap;gap:6px}.quick button{font-size:.85rem;padding:6px 10px}
+
+/* round bar */
+.roundbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between}
+.round{display:flex;align-items:baseline;gap:8px}
+.round b{font-family:var(--display);font-weight:400;font-size:2.2rem;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
+.now{font-size:.95rem;color:var(--muted)} .now strong{color:var(--ink)}
+.turnbtns{display:flex;gap:8px;flex-wrap:wrap}
+.turnbtns .primary{padding:10px 18px;font-size:1.02rem}
+
+/* ladder */
+.ladder{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;position:relative}
+.tile{display:grid;grid-template-columns:34px 30px minmax(0,1fr) auto;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:8px 10px 8px 4px;
+  transition:box-shadow .15s,border-color .15s;touch-action:auto;position:relative;user-select:none}
+.tile.active{border-color:var(--glow);box-shadow:0 0 0 2px var(--glow-soft),0 0 18px var(--glow-soft)}
+.tile.lifted{z-index:5;box-shadow:0 10px 26px #0005;border-color:var(--glow);transition:none;cursor:grabbing}
+.tile.down{opacity:.55}
+.tile.down .nm{text-decoration:line-through}
+.grip{cursor:grab;touch-action:none;display:grid;place-items:center;height:40px;border:0;background:none;padding:0;color:var(--muted)}
+.grip svg{width:16px;height:22px}
+.pos{font-family:var(--mono);font-size:.85rem;color:var(--muted);text-align:center}
+.tile.active .pos{color:var(--glow);font-weight:600}
+.who{display:flex;flex-direction:column;gap:3px;min-width:0}
+.nm{border:0;background:transparent;padding:2px 4px;margin-left:-4px;font-size:1.08rem;font-weight:700;width:100%;min-width:0;border-radius:4px}
+.nm:focus{background:var(--panel2)}
+.meta{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.side{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:99px;border:1px solid currentColor;background:none;cursor:pointer}
+.side.hero{color:var(--hero)}.side.foe{color:var(--foe)}.side.ally{color:var(--ally)}
+.now-tag{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--on-glow);background:var(--glow);padding:2px 8px;border-radius:99px}
+.now-tag,.next-tag{white-space:nowrap}
+.next-tag{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tools{display:flex;gap:4px;align-items:center}
+.init{width:58px;text-align:center;font-family:var(--mono);padding:6px 4px}
+.tools button{padding:6px 8px;font-size:.82rem;min-width:34px}
+.empty{color:var(--muted);text-align:center;padding:28px 10px;border:1px dashed var(--rule);border-radius:8px;margin:0}
+.note{font-size:.84rem;color:var(--muted);margin:0;max-width:75ch}
+.bottom{display:flex;gap:8px;flex-wrap:wrap}
+@media (max-width:480px){.tools .mv{display:none}.tile{grid-template-columns:30px 22px minmax(0,1fr) auto}}
+@media (prefers-reduced-motion:reduce){.tile{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div><h1>Ironspine Turn Ladder</h1><p class="sub">Add names, drag the tiles into order, then hit Next turn.</p></div>
+  </header>
+
+  <div class="main">
+    <aside class="card">
+      <h2>Add to the fight</h2>
+      <form id="add" class="field" style="gap:10px">
+        <div class="field"><label class="lbl" for="name">Name</label><input id="name" type="text" placeholder="e.g. Bloom, Zombie" autocomplete="off" required></div>
+        <div class="row">
+          <div class="field"><label class="lbl" for="init">Initiative</label><input id="init" type="number" placeholder="optional"></div>
+          <div class="field"><label class="lbl" for="qty">How many</label><input id="qty" type="number" min="1" max="20" value="1"></div>
+        </div>
+        <div class="field"><span class="lbl">Side</span>
+          <div class="seg" id="side"><button type="button" data-v="hero" aria-pressed="true">Hero</button><button type="button" data-v="foe" aria-pressed="false">Foe</button><button type="button" data-v="ally" aria-pressed="false">Ally</button></div></div>
+        <button class="primary" type="submit">Add tile</button>
+      </form>
+      <div class="field"><span class="lbl">Quick add foes</span>
+        <div class="quick" id="quick"><button data-n="Zombie" data-q="3">+3 Zombies</button><button data-n="Zombie" data-q="6">+6 Zombies</button><button data-n="Hellhound" data-q="2">+2 Hellhounds</button><button data-n="Brute" data-q="1">+1 Brute</button></div></div>
+      <div class="bottom"><button id="sort">Sort by initiative</button><button id="clearFoes">Remove all foes</button><button id="clearAll">Clear everything</button></div>
+      <p class="note" id="confirm" hidden></p>
+    </aside>
+
+    <section class="card">
+      <div class="roundbar">
+        <div class="round"><span class="lbl">Round</span><b id="round">1</b></div>
+        <div class="turnbtns"><button id="prev">Back</button><button class="primary" id="next">Next turn</button></div>
+      </div>
+      <div class="now" id="now"></div>
+      <ol class="ladder" id="ladder"></ol>
+    </section>
+  </div>
+  <p class="note">Drag the grip on the left of a tile to move it, or use the ▲▼ buttons. Click a name to rename it, and click the side badge to switch Hero, Foe or Ally. <b>Down</b> skips that tile when turns advance. The tracker remembers your list if you close the page.</p>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const SAMPLE=[["Player 1","hero",17],["Zombie 1","foe",14],["Player 2","hero",12],["Zombie 2","foe",9],["Player 3","hero",6]];
+let st={list:SAMPLE.map(([name,side,init])=>({id:uid(),name,side,init,down:false})),cur:null,round:1,side:"hero"};
+try{const s=JSON.parse(localStorage.getItem("turnladder")||"null");if(s&&Array.isArray(s.list))st=Object.assign(st,s)}catch(e){}
+if(!st.cur&&st.list.length)st.cur=st.list[0].id;
+const save=()=>{try{localStorage.setItem("turnladder",JSON.stringify(st))}catch(e){}};
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const SIDES=["hero","foe","ally"],SN={hero:"Hero",foe:"Foe",ally:"Ally"};
+const GRIP='<svg viewBox="0 0 16 22" fill="currentColor"><circle cx="5" cy="4" r="2"/><circle cx="11" cy="4" r="2"/><circle cx="5" cy="11" r="2"/><circle cx="11" cy="11" r="2"/><circle cx="5" cy="18" r="2"/><circle cx="11" cy="18" r="2"/></svg>';
+
+function liveIdx(from,dir){const L=st.list,n=L.length;if(!n)return -1;
+  for(let k=1;k<=n;k++){const i=((from+dir*k)%n+n)%n;if(!L[i].down)return i}return -1}
+function render(){
+  const L=st.list,ci=L.findIndex(x=>x.id===st.cur);
+  const ni=ci<0?-1:liveIdx(ci,1);
+  $("round").textContent=st.round;
+  $("ladder").innerHTML=L.length?L.map((t,i)=>`
+   <li class="tile${t.id===st.cur?" active":""}${t.down?" down":""}" data-id="${t.id}">
+    <button class="grip" aria-label="Drag to reorder ${esc(t.name)}">${GRIP}</button>
+    <span class="pos">${i+1}</span>
+    <div class="who"><input class="nm" id="nm-${t.id}" value="${esc(t.name)}" aria-label="Name">
+     <div class="meta"><button class="side ${t.side}" data-a="side" title="Change side">${SN[t.side]}</button>
+      ${t.id===st.cur?'<span class="now-tag">Acting now</span>':i===ni&&ni!==ci?'<span class="next-tag">Up next</span>':""}</div></div>
+    <div class="tools">
+     <input class="init" id="in-${t.id}" type="number" value="${t.init??""}" placeholder="–" aria-label="Initiative for ${esc(t.name)}">
+     <button class="mv" data-a="up" aria-label="Move up" ${i===0?"disabled":""}>▲</button><button class="mv" data-a="dn" aria-label="Move down" ${i===L.length-1?"disabled":""}>▼</button>
+     <button data-a="down" aria-pressed="${t.down}" title="Down: skipped when turns advance">${t.down?"Up":"Down"}</button>
+     <button data-a="del" aria-label="Remove ${esc(t.name)}">✕</button>
+    </div></li>`).join(""):`<p class="empty">No one in the fight yet. Add names on the left and they'll appear here as tiles.</p>`;
+  const cur=L[ci];
+  $("now").innerHTML=cur?`<strong>${esc(cur.name)}</strong> is acting.${ni>=0&&ni!==ci?` ${esc(L[ni].name)} is up next.`:""}`:"";
+  $("next").disabled=$("prev").disabled=!L.some(t=>!t.down);
+  save();
+}
+
+// ---- turns
+$("next").onclick=()=>{const L=st.list;let ci=L.findIndex(x=>x.id===st.cur);if(ci<0)ci=-1;
+  const ni=liveIdx(ci<0?L.length-1:ci,1);if(ni<0)return;if(ci>=0&&ni<=ci)st.round++;st.cur=L[ni].id;render();
+  document.querySelector(".tile.active")?.scrollIntoView({block:"nearest",behavior:"smooth"})};
+$("prev").onclick=()=>{const L=st.list;const ci=L.findIndex(x=>x.id===st.cur);if(ci<0)return;
+  const pi=liveIdx(ci,-1);if(pi<0)return;if(pi>=ci&&st.round>1)st.round--;st.cur=L[pi].id;render()};
+
+// ---- add
+$("side").onclick=e=>{const b=e.target.closest("button");if(!b)return;st.side=b.dataset.v;
+  $("side").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));save()};
+function addMany(name,qty,side,init){
+  const base=name.trim();if(!base)return;
+  const existing=st.list.filter(t=>t.name.replace(/ \d+$/,"")===base).length;
+  for(let k=0;k<qty;k++){const nm=qty>1||existing?`${base} ${existing+k+1}`:base;
+    st.list.push({id:uid(),name:nm,side,init:init===""||init==null?null:+init,down:false})}
+  if(!st.cur&&st.list.length)st.cur=st.list[0].id;render();
+}
+$("add").onsubmit=e=>{e.preventDefault();addMany($("name").value,Math.max(1,Math.min(20,+$("qty").value||1)),st.side,$("init").value);
+  $("name").value="";$("init").value="";$("qty").value=1;$("name").focus()};
+$("quick").onclick=e=>{const b=e.target.closest("button");if(b)addMany(b.dataset.n,+b.dataset.q,"foe",null)};
+
+// ---- tile actions
+$("ladder").addEventListener("click",e=>{const b=e.target.closest("button[data-a]");if(!b)return;
+  const id=b.closest(".tile").dataset.id,i=st.list.findIndex(t=>t.id===id),t=st.list[i];
+  const a=b.dataset.a;
+  if(a==="up"&&i>0)[st.list[i-1],st.list[i]]=[st.list[i],st.list[i-1]];
+  if(a==="dn"&&i<st.list.length-1)[st.list[i+1],st.list[i]]=[st.list[i],st.list[i+1]];
+  if(a==="side")t.side=SIDES[(SIDES.indexOf(t.side)+1)%3];
+  if(a==="down")t.down=!t.down;
+  if(a==="del"){if(st.cur===id){const ni=liveIdx(i,1);st.cur=ni>=0&&ni!==i?st.list[ni].id:null}st.list.splice(i,1);if(!st.cur&&st.list.length)st.cur=st.list[0].id}
+  render();
+  if(a==="up"||a==="dn")document.querySelector(`.tile[data-id="${id}"] [data-a="${a}"]`)?.focus();
+});
+$("ladder").addEventListener("change",e=>{const tile=e.target.closest(".tile");if(!tile)return;const t=st.list.find(x=>x.id===tile.dataset.id);
+  if(e.target.classList.contains("nm"))t.name=e.target.value.trim()||t.name;
+  if(e.target.classList.contains("init"))t.init=e.target.value===""?null:+e.target.value;
+  render()});
+$("ladder").addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("input"))e.target.blur()});
+
+// ---- drag to reorder
+let drag=null;
+$("ladder").addEventListener("pointerdown",e=>{const g=e.target.closest(".grip");if(!g)return;e.preventDefault();
+  const el=g.closest(".tile");g.setPointerCapture(e.pointerId);el.classList.add("lifted");
+  drag={el,g,startY:e.clientY,gap:8}});
+$("ladder").addEventListener("pointermove",e=>{if(!drag)return;const {el}=drag,list=$("ladder");
+  el.style.transform=`translateY(${e.clientY-drag.startY}px)`;
+  const next=el.nextElementSibling,prev=el.previousElementSibling;
+  if(next){const r=next.getBoundingClientRect();if(e.clientY>r.top+r.height/2){list.insertBefore(next,el);drag.startY+=r.height+drag.gap}}
+  if(prev){const r=prev.getBoundingClientRect();if(e.clientY<r.top+r.height/2){list.insertBefore(el,prev);drag.startY-=r.height+drag.gap}}
+  el.style.transform=`translateY(${e.clientY-drag.startY}px)`;
+  [...list.children].forEach((t,i)=>{const p=t.querySelector(".pos");if(p)p.textContent=i+1});
+});
+function endDrag(){if(!drag)return;const order=[...$("ladder").children].map(t=>t.dataset.id);
+  st.list.sort((a,b)=>order.indexOf(a.id)-order.indexOf(b.id));drag=null;render()}
+$("ladder").addEventListener("pointerup",endDrag);$("ladder").addEventListener("pointercancel",endDrag);
+
+// ---- bulk
+$("sort").onclick=()=>{st.list.sort((a,b)=>(b.init??-99)-(a.init??-99));render()};
+let pending=null;
+function confirmIt(msg,fn){const c=$("confirm");
+  if(pending===msg){fn();pending=null;c.hidden=true;return}
+  pending=msg;c.hidden=false;c.textContent=msg+" Click again to confirm.";setTimeout(()=>{if(pending===msg){pending=null;c.hidden=true}},4000)}
+$("clearFoes").onclick=()=>confirmIt("Remove every foe?",()=>{const cur=st.list.find(t=>t.id===st.cur);st.list=st.list.filter(t=>t.side!=="foe");
+  if(!st.list.some(t=>t.id===st.cur))st.cur=st.list[0]?.id||null;render()});
+$("clearAll").onclick=()=>confirmIt("Clear every tile and reset to round 1?",()=>{st.list=[];st.cur=null;st.round=1;render()});
+
+document.querySelectorAll("#side button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===st.side));
+render();
+</script>
+</body></html>

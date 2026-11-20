@@ -1,0 +1,33 @@
+DM SATCHEL - how to get it on your Android phone
+=================================================
+
+The app is a set of web files. Put them on a free web host once, then
+install from Chrome. After the first visit it works offline.
+
+OPTION A - GitHub Pages (free, permanent)
+ 1. Sign in at github.com (free account) and click "New repository".
+    Name it dm-satchel, set it to Public, and create it.
+ 2. Click "uploading an existing file". Drag in EVERYTHING from this
+    folder, including the "tools" folder, then click "Commit changes".
+ 3. In the repo go to Settings > Pages. Under "Branch" choose "main",
+    folder "/ (root)", and Save.
+ 4. After a minute or two, your address appears at the top of that page,
+    like https://YOURNAME.github.io/dm-satchel/
+
+OPTION B - Netlify Drop (fastest)
+ 1. Go to app.netlify.com/drop on a computer and sign up (free).
+ 2. Drag this whole folder onto the page. You get an address right away.
+
+INSTALL ON THE PHONE
+ 1. Open your address in Chrome on the phone.
+ 2. Tap the three-dot menu > "Install app" (or "Add to Home screen").
+ 3. DM Satchel now has its own icon, opens full-screen, and works
+    without internet.
+
+UPDATING LATER
+ Upload changed files the same way. The app picks up the new version
+ the next time it opens with internet (sometimes it takes a second
+ restart of the app).
+
+NOTE: The app keeps its own saved data (turn order, box log, settings).
+It does not share saved data with the versions of these tools on claude.ai.

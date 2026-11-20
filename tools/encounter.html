@@ -1,0 +1,374 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Wandering Monster Table</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@600&family=Grenze:wght@500;600&family=Karla:ital,wght@0,400;0,500;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: a DM's screen — a settings panel on the left, the rolled encounter as a stat-block page on the right; stacks on phones. */
+:root{
+  --bg:#e4e7ea; --panel:#f5f6f7; --ink:#1b222b; --muted:#5a6573; --rule:#c5ccd4;
+  --accent:#1f4e79; --accent-ink:#f5f6f7; --chip:#e1e6ec;
+  --easy:#4b8a5c; --med:#b8912c; --hard:#c4612b; --deadly:#a32630;
+  --display:"Grenze Gotisch", "UnifrakturCook", Georgia, serif;
+  --head:"Grenze", Georgia, serif;
+  --body:"Karla", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, "Courier New", monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#12161b; --panel:#1b2128; --ink:#e3e7ec; --muted:#97a3b1; --rule:#2f3843;
+  --accent:#7fb0de; --accent-ink:#12161b; --chip:#252d36;
+  --easy:#6cba80; --med:#d9b24e; --hard:#e8834d; --deadly:#e2575f; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12161b; --panel:#1b2128; --ink:#e3e7ec; --muted:#97a3b1; --rule:#2f3843;
+  --accent:#7fb0de; --accent-ink:#12161b; --chip:#252d36;
+  --easy:#6cba80; --med:#d9b24e; --hard:#e8834d; --deadly:#e2575f; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 40px}
+.wrap{max-width:1140px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{border-bottom:2px solid var(--ink);padding-bottom:10px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:8px}
+h1{font-family:var(--display);font-weight:600;font-size:clamp(2.1rem,5vw,3.1rem);line-height:1;margin:0}
+.sub{margin:4px 0 0;color:var(--muted)}
+.main{display:grid;grid-template-columns:330px minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:860px){.main{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.sec{display:flex;flex-direction:column;gap:8px}
+.sec h2{font-family:var(--head);font-weight:600;font-size:1.05rem;margin:0;letter-spacing:.02em}
+.lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{flex:1 1 auto}
+button,select,input{font:inherit;font-size:.92rem;color:var(--ink)}
+button{cursor:pointer;border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:7px 10px;font-weight:500}
+button:hover{border-color:var(--accent)}
+button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;padding:11px 14px;font-size:1rem}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+select,input[type=number]{border:1px solid var(--rule);border-radius:4px;background:var(--bg);padding:7px 8px}
+input[type=number]{width:64px;font-family:var(--mono)}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.players{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px}
+.players label{display:flex;flex-direction:column;gap:2px;font-size:.7rem;color:var(--muted)}
+.players input{width:100%}
+.envs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+.envs button{text-align:left;padding:6px 9px}
+.result{display:flex;flex-direction:column;gap:14px;min-width:0}
+.sheet{background:var(--panel);border:1px solid var(--rule);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.sheet h2{font-family:var(--head);font-weight:600;font-size:clamp(1.4rem,3vw,1.9rem);margin:0;line-height:1.1;text-wrap:balance}
+.tagline{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:.78rem;font-weight:700;padding:3px 9px;border-radius:99px;background:var(--chip)}
+.pill.diff{color:#fff}
+.scene{margin:0;max-width:68ch}
+table{width:100%;border-collapse:collapse;font-size:.92rem;font-variant-numeric:tabular-nums}
+.tw{overflow-x:auto}
+th{text-align:left;font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:500;border-bottom:1px solid var(--rule);padding:6px 8px}
+td{padding:8px;border-bottom:1px solid var(--rule);vertical-align:top}
+td.n{font-family:var(--mono);white-space:nowrap}
+td .nm{font-weight:700} td .ty{color:var(--muted);font-size:.82rem}
+td a{color:var(--accent)}
+.meter{display:flex;flex-direction:column;gap:6px}
+.bar{position:relative;height:14px;border-radius:3px;display:flex;overflow:hidden;background:var(--chip)}
+.bar span{height:100%}
+.mark{position:absolute;top:-4px;width:3px;height:22px;background:var(--ink);border-radius:2px;transform:translateX(-1px)}
+.barwrap{position:relative;padding-top:4px}
+.scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.72rem;color:var(--muted);position:relative;height:1.1em}
+.scale i{position:absolute;font-style:normal;transform:translateX(-50%);white-space:nowrap}
+.math{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
+.math div{border:1px solid var(--rule);border-radius:4px;padding:6px 10px}
+.math b{display:block;font-family:var(--mono);font-size:1.05rem}
+.math small{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em}
+.twist{border-left:3px solid var(--accent);padding:4px 0 4px 12px;margin:0;max-width:68ch}
+.twist b{font-family:var(--head);font-weight:600}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.hist{display:flex;flex-direction:column;gap:6px}
+.hist button{text-align:left;display:flex;justify-content:space-between;gap:10px;font-size:.86rem}
+.hist button span:last-child{color:var(--muted);font-family:var(--mono);font-size:.78rem;white-space:nowrap}
+.warn{color:var(--deadly);font-size:.9rem;margin:0}
+.note{font-size:.84rem;color:var(--muted);margin:0;max-width:75ch}
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:4px;font-size:.9rem}
+</style>
+
+<div class="wrap">
+  <header>
+    <div><h1>Wandering Monster Table</h1>
+    <p class="sub">Balanced 5e encounters from the SRD bestiary, matched to party and terrain.</p></div>
+  </header>
+
+  <div class="main">
+    <aside class="panel">
+      <div class="sec"><h2>Rules</h2>
+        <div class="seg" id="rules"><button data-v="2014" aria-pressed="true">2014 DMG</button><button data-v="2024" aria-pressed="false">2024 DMG</button></div>
+      </div>
+      <div class="sec"><h2>Difficulty</h2><div class="seg" id="diff"></div></div>
+      <div class="sec"><h2>Party</h2>
+        <div class="row">
+          <label class="lbl" for="count">Players</label><input id="count" type="number" min="1" max="10" value="4">
+          <label class="lbl" for="allLvl">Level</label><input id="allLvl" type="number" min="1" max="20" value="3">
+        </div>
+        <span class="lbl">Each player (edit for mixed levels)</span>
+        <div class="players" id="players"></div>
+      </div>
+      <div class="sec"><h2>Setting</h2><div class="envs" id="envs"></div></div>
+      <button class="primary" id="go">Roll encounter</button>
+    </aside>
+
+    <section class="result">
+      <div class="sheet" id="sheet"></div>
+      <div class="sheet" id="histBox" hidden><h2 style="font-size:1.1rem">Earlier rolls</h2><div class="hist" id="hist"></div></div>
+      <p class="note">Monsters come from the 5e SRD with Dungeon Master's Guide environment lists. Budgets use the encounter tables for the edition you pick: 2014 applies the group-size XP multiplier, 2024 adds raw XP against a per-character budget. The name links search D&amp;D Beyond for the full stat block.</p>
+    </section>
+  </div>
+</div>
+
+<script>
+// ---------- DATA ----------
+const ENVS=[["A","Arctic"],["C","Coastal"],["D","Desert"],["F","Forest"],["G","Grassland"],["H","Hills"],["M","Mountain"],["S","Swamp"],["U","Underdark"],["W","Underwater"],["T","Urban"],["N","Dungeon & Ruins"],["*","Anywhere"]];
+const XP={0:10,.125:25,.25:50,.5:100,1:200,2:450,3:700,4:1100,5:1800,6:2300,7:2900,8:3900,9:5000,10:5900,11:7200,12:8400,13:10000,14:11500,15:13000,16:15000,17:18000,18:20000,19:22000,20:25000,21:33000,22:41000,23:50000,24:62000};
+// [name, CR, type, AC, HP, envs, tag?]
+const M=[
+["Bandit",.125,"humanoid",12,11,"CDFGHT","bandit"],["Cultist",.125,"humanoid",12,9,"TN","cult"],["Guard",.125,"humanoid",16,11,"T","town"],
+["Kobold",.125,"humanoid",12,5,"FHMTUN","kobold"],["Merfolk",.125,"humanoid",11,11,"CW","merfolk"],["Stirge",.125,"beast",14,2,"FHSUN"],
+["Giant Rat",.125,"beast",12,7,"FSTUN","rat"],["Giant Crab",.125,"beast",15,13,"CW"],["Flying Snake",.125,"beast",14,5,"DFS"],
+["Poisonous Snake",.125,"beast",13,2,"DGS"],["Twig Blight",.125,"plant",13,4,"F"],["Mastiff",.125,"beast",12,5,"HT","hound"],
+["Tribal Warrior",.125,"humanoid",12,11,"ADFGHMS","tribal"],["Giant Weasel",.125,"beast",13,9,"FGH"],
+["Goblin",.25,"humanoid",15,7,"FGHUN","goblinoid"],["Skeleton",.25,"undead",13,13,"NTU"],["Zombie",.25,"undead",8,22,"NSTU"],
+["Wolf",.25,"beast",13,11,"AFGH","wolf"],["Blink Dog",.25,"fey",13,22,"FG"],["Pteranodon",.25,"beast",13,13,"CGM"],["Elk",.25,"beast",10,13,"AFGH"],
+["Giant Badger",.25,"beast",10,13,"FG"],["Giant Frog",.25,"beast",11,18,"FS"],["Giant Poisonous Snake",.25,"beast",14,11,"DFSU","snake"],
+["Giant Wolf Spider",.25,"beast",13,11,"DFGH","spider"],["Pseudodragon",.25,"dragon",13,7,"FHM"],["Drow",.25,"humanoid",15,13,"U","drow"],
+["Acolyte",.25,"humanoid",10,9,"T","cult"],["Swarm of Bats",.25,"beast",12,22,"FHUN","bat"],["Swarm of Rats",.25,"beast",10,24,"TSN","rat"],
+["Mud Mephit",.25,"elemental",11,27,"S"],["Smoke Mephit",.25,"elemental",12,22,"MU"],["Steam Mephit",.25,"elemental",10,21,"CU"],
+["Sprite",.25,"fey",15,2,"F"],["Boar",.25,"beast",11,11,"FGH","boar"],["Giant Centipede",.25,"beast",13,4,"DFUN"],
+["Constrictor Snake",.25,"beast",12,13,"FS","snake"],["Panther",.25,"beast",12,13,"FGH"],["Violet Fungus",.25,"plant",5,18,"U"],["Grimlock",.25,"humanoid",11,11,"U","grimlock"],
+["Dust Mephit",.5,"elemental",12,17,"D"],["Ice Mephit",.5,"elemental",11,21,"AM"],["Magma Mephit",.5,"elemental",11,22,"MU"],
+["Orc",.5,"humanoid",13,15,"AFGHMSU","orc"],["Hobgoblin",.5,"humanoid",18,11,"FGHU","goblinoid"],["Gnoll",.5,"humanoid",15,22,"DFGH","gnoll"],
+["Lizardfolk",.5,"humanoid",15,22,"S","lizard"],["Sahuagin",.5,"humanoid",12,22,"CW","sahuagin"],["Scout",.5,"humanoid",13,16,"AFGHMS","bandit"],
+["Thug",.5,"humanoid",11,32,"CT","bandit"],["Shadow",.5,"undead",12,16,"UTN"],["Gray Ooze",.5,"ooze",8,22,"SUN"],["Satyr",.5,"fey",14,31,"F"],
+["Worg",.5,"monstrosity",13,26,"FGH","wolf"],["Black Bear",.5,"beast",11,19,"F"],["Giant Goat",.5,"beast",11,19,"HM"],["Giant Wasp",.5,"beast",12,13,"FG"],
+["Reef Shark",.5,"beast",12,22,"W","shark"],["Crocodile",.5,"beast",12,19,"S","croc"],["Ape",.5,"beast",12,19,"F"],["Cockatrice",.5,"monstrosity",11,27,"DG"],
+["Rust Monster",.5,"monstrosity",14,27,"UN"],["Deep Gnome",.5,"humanoid",15,16,"U","gnome"],["Giant Sea Horse",.5,"beast",13,16,"W"],
+["Darkmantle",.5,"monstrosity",11,22,"U"],["Swarm of Insects",.5,"beast",12,22,"FSU"],
+["Bugbear",1,"humanoid",16,27,"FGHMU","goblinoid"],["Ghoul",1,"undead",12,22,"NSTU"],["Brown Bear",1,"beast",11,34,"AFH"],
+["Dire Wolf",1,"beast",14,37,"AFH","wolf"],["Giant Eagle",1,"beast",13,26,"CGHM"],["Giant Hyena",1,"beast",12,45,"DG","hyena"],
+["Giant Spider",1,"beast",14,26,"FU","spider"],["Giant Toad",1,"beast",11,39,"FS"],["Giant Vulture",1,"beast",10,22,"DG"],
+["Harpy",1,"monstrosity",11,38,"CHM"],["Hippogriff",1,"monstrosity",11,19,"GHM"],["Lion",1,"beast",12,26,"DGH"],["Tiger",1,"beast",12,37,"FG"],
+["Imp",1,"fiend",13,10,"TN"],["Quasit",1,"fiend",13,7,"TN"],["Specter",1,"undead",12,22,"TUN"],["Animated Armor",1,"construct",18,33,"N"],
+["Dryad",1,"fey",11,22,"F"],["Thri-kreen",1,"monstrosity",15,33,"DG"],["Spy",1,"humanoid",12,27,"T","town"],["Duergar",1,"humanoid",16,26,"U","duergar"],
+["Death Dog",1,"monstrosity",12,39,"D","hound"],["Giant Octopus",1,"beast",11,52,"W"],["Swarm of Quippers",1,"beast",13,28,"W"],
+["Polar Bear",2,"beast",12,42,"A"],["Ogre",2,"giant",11,59,"AFGHMSU"],["Gargoyle",2,"elemental",15,52,"MUN"],["Ghast",2,"undead",13,36,"SUN"],
+["Gibbering Mouther",2,"aberration",9,67,"U"],["Hunter Shark",2,"beast",12,45,"W","shark"],["Merrow",2,"monstrosity",13,45,"CW","sahuagin"],
+["Ochre Jelly",2,"ooze",8,45,"UN"],["Pegasus",2,"celestial",12,59,"FGHM"],["Plesiosaurus",2,"beast",13,68,"CW"],["Saber-Toothed Tiger",2,"beast",12,52,"AM"],
+["Sea Hag",2,"fey",14,52,"CW","sahuagin"],["Will-o'-Wisp",2,"undead",19,22,"FSU"],["Bandit Captain",2,"humanoid",15,65,"CDFGHT","bandit"],
+["Berserker",2,"humanoid",13,67,"AFGHM","tribal"],["Druid",2,"humanoid",11,27,"FGHS","tribal"],["Priest",2,"humanoid",13,27,"T","town"],
+["Ankheg",2,"monstrosity",14,39,"FGH"],["Griffon",2,"monstrosity",12,59,"GHM"],["Centaur",2,"monstrosity",12,45,"FG"],["Rhinoceros",2,"beast",11,45,"G"],
+["Giant Boar",2,"beast",12,42,"FGH","boar"],["Giant Constrictor Snake",2,"beast",12,60,"FSU","snake"],["Grick",2,"monstrosity",14,27,"FUN"],
+["Mimic",2,"monstrosity",12,58,"UN"],["Swarm of Poisonous Snakes",2,"beast",14,36,"DFS","snake"],["Allosaurus",2,"beast",13,51,"G"],
+["Ettercap",2,"monstrosity",13,44,"F","spider"],["Wererat",2,"humanoid",12,33,"TN","rat"],["Azer",2,"elemental",17,39,"U"],["Peryton",2,"monstrosity",13,33,"HM"],
+["Cult Fanatic",2,"humanoid",13,33,"TN","cult"],["Minotaur Skeleton",2,"undead",12,67,"UN"],["Ogre Zombie",2,"undead",8,85,"NS"],
+["Rug of Smothering",2,"construct",12,33,"N"],["Intellect Devourer",2,"aberration",12,21,"U"],["Gelatinous Cube",2,"ooze",6,84,"UN"],
+["Owlbear",3,"monstrosity",13,59,"FH"],["Manticore",3,"monstrosity",14,68,"GHM"],["Minotaur",3,"monstrosity",14,76,"UN"],["Wight",3,"undead",14,45,"SUTN"],
+["Werewolf",3,"humanoid",12,58,"FHT","wolf"],["Basilisk",3,"monstrosity",15,52,"MU"],["Hell Hound",3,"fiend",15,45,"MU"],["Doppelganger",3,"monstrosity",14,52,"TU"],
+["Phase Spider",3,"monstrosity",13,32,"FHUN","spider"],["Giant Scorpion",3,"beast",15,52,"D"],["Killer Whale",3,"beast",12,90,"W"],
+["Knight",3,"humanoid",18,52,"GT","town"],["Veteran",3,"humanoid",17,58,"CGHT","bandit"],["Water Weird",3,"elemental",13,58,"UW"],
+["Yeti",3,"monstrosity",12,51,"AM"],["Mummy",3,"undead",11,58,"DN"],["Ankylosaurus",3,"beast",15,68,"G"],["Winter Wolf",3,"monstrosity",13,75,"A","wolf"],
+["Green Hag",3,"fey",17,82,"FS"],["Displacer Beast",3,"monstrosity",13,85,"FGH"],["Bearded Devil",3,"fiend",13,52,"N"],
+["Banshee",4,"undead",12,58,"FN"],["Black Pudding",4,"ooze",7,85,"UN"],["Chuul",4,"aberration",16,93,"CSUW"],["Elephant",4,"beast",12,76,"G"],
+["Ettin",4,"giant",12,85,"AHMU"],["Ghost",4,"undead",11,45,"TN"],["Lamia",4,"monstrosity",13,97,"D"],["Succubus",4,"fiend",15,66,"T"],
+["Wereboar",4,"humanoid",10,78,"FGH","boar"],["Weretiger",4,"humanoid",12,120,"FG"],["Helmed Horror",4,"construct",20,60,"N"],["Couatl",4,"celestial",19,97,"DG"],
+["Troll",5,"giant",15,84,"AFHMSU"],["Hill Giant",5,"giant",13,105,"GHM"],["Earth Elemental",5,"elemental",17,126,"MU"],["Air Elemental",5,"elemental",15,90,"DM"],
+["Fire Elemental",5,"elemental",13,102,"DU"],["Water Elemental",5,"elemental",14,114,"CW"],["Gladiator",5,"humanoid",16,112,"T","town"],
+["Wraith",5,"undead",13,67,"TUN"],["Bulette",5,"monstrosity",17,94,"GHM"],["Otyugh",5,"aberration",14,114,"SUN"],["Roper",5,"monstrosity",20,93,"U"],
+["Salamander",5,"elemental",15,90,"U"],["Shambling Mound",5,"plant",15,136,"FS"],["Triceratops",5,"beast",13,95,"G"],["Unicorn",5,"celestial",12,67,"F"],
+["Vampire Spawn",5,"undead",15,82,"TN"],["Werebear",5,"humanoid",10,135,"AFH"],["Xorn",5,"elemental",19,73,"U"],["Flesh Golem",5,"construct",9,93,"N"],
+["Giant Crocodile",5,"beast",14,85,"S","croc"],["Giant Shark",5,"beast",13,126,"W","shark"],["Barbed Devil",5,"fiend",15,110,"N"],
+["Mammoth",6,"beast",13,126,"AG"],["Chimera",6,"monstrosity",14,114,"GHM"],["Cyclops",6,"giant",14,138,"CGHM"],["Drider",6,"monstrosity",19,123,"U","drow"],
+["Medusa",6,"monstrosity",15,127,"DMN"],["Mage",6,"humanoid",12,40,"TN","cult"],["Wyvern",6,"dragon",13,110,"HM"],["Young White Dragon",6,"dragon",17,133,"A"],
+["Invisible Stalker",6,"elemental",14,104,"MT"],["Vrock",6,"fiend",15,104,"N"],
+["Stone Giant",7,"giant",17,126,"HMU"],["Young Black Dragon",7,"dragon",18,127,"S"],["Young Copper Dragon",7,"dragon",17,119,"HM"],
+["Oni",7,"giant",16,110,"FT"],["Giant Ape",7,"beast",12,157,"FG"],["Shield Guardian",7,"construct",17,142,"N"],
+["Frost Giant",8,"giant",15,138,"AM"],["Hydra",8,"monstrosity",15,172,"CSW"],["Young Green Dragon",8,"dragon",18,136,"F"],["Spirit Naga",8,"monstrosity",15,75,"DN"],
+["Tyrannosaurus Rex",8,"beast",13,136,"G"],["Assassin",8,"humanoid",15,78,"T","town"],["Chain Devil",8,"fiend",16,85,"N"],["Cloaker",8,"aberration",14,78,"U"],
+["Hezrou",8,"fiend",16,136,"N"],["Young Bronze Dragon",8,"dragon",18,142,"CW"],
+["Fire Giant",9,"giant",18,162,"MU"],["Cloud Giant",9,"giant",14,200,"M"],["Young Blue Dragon",9,"dragon",18,152,"CD"],["Young Silver Dragon",9,"dragon",18,168,"M"],
+["Bone Devil",9,"fiend",19,142,"N"],["Clay Golem",9,"construct",14,133,"N"],["Treant",9,"plant",16,138,"F"],["Glabrezu",9,"fiend",17,157,"N"],
+["Aboleth",10,"aberration",17,135,"UW"],["Young Red Dragon",10,"dragon",18,178,"HM"],["Young Gold Dragon",10,"dragon",18,178,"FG"],
+["Stone Golem",10,"construct",17,178,"N"],["Guardian Naga",10,"monstrosity",18,127,"DFN"],
+["Behir",11,"monstrosity",17,168,"MU"],["Djinni",11,"elemental",17,161,"D"],["Efreeti",11,"elemental",17,200,"D"],["Horned Devil",11,"fiend",18,148,"N"],
+["Remorhaz",11,"monstrosity",17,195,"AM"],["Roc",11,"monstrosity",15,248,"CHM"],["Gynosphinx",11,"monstrosity",17,136,"D"],
+["Archmage",12,"humanoid",12,99,"TN","cult"],["Erinyes",12,"fiend",18,153,"N"],
+["Adult White Dragon",13,"dragon",18,200,"A"],["Storm Giant",13,"giant",16,230,"CW"],["Rakshasa",13,"fiend",16,110,"T"],["Vampire",13,"undead",16,144,"TN"],
+["Nalfeshnee",13,"fiend",18,184,"N"],["Adult Brass Dragon",13,"dragon",18,172,"D"],
+["Adult Black Dragon",14,"dragon",19,195,"S"],["Adult Copper Dragon",14,"dragon",18,184,"HM"],["Ice Devil",14,"fiend",18,180,"AN"],
+["Adult Green Dragon",15,"dragon",19,207,"F"],["Mummy Lord",15,"undead",17,97,"DN"],["Purple Worm",15,"monstrosity",18,247,"DU"],["Adult Bronze Dragon",15,"dragon",19,212,"C"],
+["Adult Blue Dragon",16,"dragon",19,225,"CD"],["Iron Golem",16,"construct",20,210,"N"],["Marilith",16,"fiend",18,189,"N"],["Adult Silver Dragon",16,"dragon",19,243,"M"],
+["Adult Red Dragon",17,"dragon",19,256,"HM"],["Androsphinx",17,"monstrosity",17,199,"D"],["Dragon Turtle",17,"dragon",20,341,"CW"],["Adult Gold Dragon",17,"dragon",19,256,"FG"],
+["Balor",19,"fiend",19,262,"N"],["Ancient White Dragon",20,"dragon",20,333,"A"],["Pit Fiend",20,"fiend",19,300,"N"],["Ancient Brass Dragon",20,"dragon",20,297,"D"],
+["Lich",21,"undead",17,135,"N"],["Ancient Black Dragon",21,"dragon",22,367,"S"],["Ancient Copper Dragon",21,"dragon",21,350,"HM"],
+["Ancient Green Dragon",22,"dragon",21,385,"F"],["Ancient Bronze Dragon",22,"dragon",22,444,"C"],
+["Ancient Blue Dragon",23,"dragon",22,481,"D"],["Kraken",23,"monstrosity",18,472,"W"],["Ancient Silver Dragon",23,"dragon",22,487,"M"],
+["Ancient Red Dragon",24,"dragon",22,546,"HM"],["Ancient Gold Dragon",24,"dragon",22,546,"FG"]
+].map(([name,cr,type,ac,hp,env,tag])=>({name,cr,type,ac,hp,env,tag,xp:XP[cr]}));
+
+// who can fight alongside whom
+const ALLY={goblinoid:["wolf","giant"],orc:["wolf","giant"],gnoll:["hyena"],cult:["fiend","undead"],drow:["spider"],lizard:["croc"],
+  sahuagin:["shark"],bandit:["hound"],kobold:["dragon"],tribal:["wolf"],town:["hound"],duergar:["giant"],rat:["rat"],undead:["cult"]};
+const fam=m=>m.tag||(m.type==="beast"?m.name:m.type);
+const compatible=(a,b)=>{const fa=fam(a),fb=fam(b);return fa===fb||(ALLY[fa]||[]).includes(fb)||(ALLY[fb]||[]).includes(fa)||(ALLY[fa]||[]).includes(b.type)||(ALLY[fb]||[]).includes(a.type)};
+
+// 2014 thresholds [easy, medium, hard, deadly]
+const T14=[null,[25,50,75,100],[50,100,150,200],[75,150,225,400],[125,250,375,500],[250,500,750,1100],[300,600,900,1400],[350,750,1100,1700],[450,900,1400,2100],[550,1100,1600,2400],[600,1200,1900,2800],[800,1600,2400,3600],[1000,2000,3000,4500],[1100,2200,3400,5100],[1250,2500,3800,5700],[1400,2800,4300,6400],[1600,3200,4800,7200],[2000,3900,5900,8800],[2100,4200,6300,9500],[2400,4900,7300,10900],[2800,5700,8500,12700]];
+// 2024 budgets [low, moderate, high]
+const T24=[null,[50,75,100],[100,150,200],[150,225,400],[250,375,500],[500,750,1100],[600,1000,1400],[750,1300,1700],[1000,1700,2100],[1300,2000,2600],[1600,2300,3100],[1900,2900,4100],[2200,3700,4700],[2600,4200,5400],[2900,4900,6200],[3300,5400,7800],[3800,6100,9800],[4500,7200,11700],[5000,8700,14200],[5500,10700,17200],[6400,13200,22000]];
+const DIFF={"2014":[["Easy","--easy"],["Medium","--med"],["Hard","--hard"],["Deadly","--deadly"]],"2024":[["Low","--easy"],["Moderate","--med"],["High","--deadly"]]};
+
+const SCENES={
+ A:["Wind-scoured ice shelf, footing treacherous","A half-buried longship locked in the glacier","Snow cave mouth, breath fogging in the dark","Frozen lake that groans under weight"],
+ C:["A tide-flat at dusk with the water coming in fast","Smugglers' cove under a crumbling sea cliff","A wrecked cog on the rocks, still creaking","Salt-marsh boardwalk slick with spray"],
+ D:["Dune crest with the sun at its worst","A dry wadi with one muddy waterhole","Sandstone ruins half-swallowed by drift","Salt pan shimmering with heat haze"],
+ F:["Old-growth trail where the canopy blots out the sun","A woodcutter's clearing, recently abandoned","Mossy ravine crossed by a fallen log","Ring of standing stones in a birch grove"],
+ G:["Tall grass that hides anything lying low","A burned-out farmstead off the road","Crossroads with a hanging gibbet","Rolling plain under a fast-moving storm"],
+ H:["Switchback road above a sheer drop","Barrow mound with a broken seal","Shepherd's hut on a windy ridge","Rocky tor with good sightlines for archers"],
+ M:["Narrow pass with loose scree above","Rope bridge over a gorge","Abandoned dwarven watchtower","High meadow ringed by cliffs"],
+ S:["Sucking mud and waist-deep black water","Stilt village gone quiet","Rotting causeway between hummocks","Mist-choked cypress stand, visibility 30 ft"],
+ U:["Fungus forest glowing faintly violet","Chasm crossed by a natural stone arch","Flooded cavern with an underground river","Abandoned mine gallery with rotted supports"],
+ W:["Kelp forest with shafts of green light","Sunken temple on the seabed","Reef wall dropping into darkness","Wreck of a sea-going galley, hold torn open"],
+ T:["Narrow alley behind a dockside tavern","Crowded market square at closing time","Rooftops over the tannery district","Sewer junction under the old city"],
+ N:["Pillared hall with a collapsed ceiling","Crypt lined with niches and old bones","Flooded corridor ending at a sealed door","Collapsed shrine with a still-burning brazier"]
+};
+const HOOKS={
+ solo:["is hunting and has picked up the party's scent","lairs here and treats intruders as prey","is wounded and desperate, which makes it dangerous","guards something it won't leave behind","is feeding on a fresh kill and doesn't want company"],
+ pack:["move as a hunting pack and try to flank","are laying an ambush along the party's route","are squabbling over a kill and turn on the newcomers","are fleeing something worse and won't stop to talk","have been driven here from their usual territory"],
+ lead:["are under orders and fight in formation around their leader","are escorting a prisoner the party might recognize","demand a toll; it could start as a negotiation","are scouting ahead of a larger force","are camped for the night with a watch posted"]
+};
+const TWISTS=[["Weather turns","Rain, wind or fog sets in during round 2. Ranged attacks have disadvantage beyond 30 ft."],
+ ["A third party","Halfway through, another creature arrives, drawn by the noise. Decide whose side it's on."],
+ ["They have loot","One of them carries something valuable or plot-relevant. They'll try to escape with it."],
+ ["Morale breaks","When the strongest foe drops, the rest try to flee or surrender."],
+ ["Hostage","They have a captive. Harming the captive is their threat."],
+ ["Difficult ground","Half the area is difficult terrain: mud, rubble, ice or undergrowth."],
+ ["They want to talk","They open with a parley. Fighting is their second choice."],
+ ["Bad timing","The party is resting, crossing an obstacle or split up when this begins."],
+ ["Reinforcements","One more of the weakest creature arrives at the end of round 3."],
+ ["No twist","Play it straight."]];
+
+// ---------- STATE ----------
+const st={rules:"2014",diff:1,count:4,levels:[3,3,3,3],env:"C"};
+try{Object.assign(st,JSON.parse(localStorage.getItem("encgen")||"{}"))}catch(e){}
+const $=id=>document.getElementById(id);
+const pick=a=>a[Math.floor(Math.random()*a.length)], R=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const crTxt=c=>c===.125?"1/8":c===.25?"1/4":c===.5?"1/2":String(c);
+const fmt=n=>n.toLocaleString("en-US");
+const save=()=>{try{localStorage.setItem("encgen",JSON.stringify(st))}catch(e){}};
+
+function mult14(n,party){const steps=[.5,1,1.5,2,2.5,3,4,5];let i=n<=1?1:n===2?2:n<=6?3:n<=10?4:n<=14?5:6;
+  if(party<3)i++;else if(party>=6)i--;return steps[Math.max(0,Math.min(7,i))]}
+
+function budget(){
+  const L=st.levels.slice(0,st.count);
+  if(st.rules==="2014"){const t=[0,1,2,3].map(i=>L.reduce((s,l)=>s+T14[l][i],0));return {t,lo:t[st.diff],hi:st.diff<3?t[st.diff+1]:Math.round(t[3]*1.5)}}
+  const t=[0,1,2].map(i=>L.reduce((s,l)=>s+T24[l][i],0));
+  const lo=st.diff===0?Math.round(t[0]*.7):Math.max(t[st.diff-1]+1,Math.round(t[st.diff]*.75));return {t,lo,hi:t[st.diff],incl:true};
+}
+function score(group){const n=group.reduce((s,g)=>s+g.n,0),raw=group.reduce((s,g)=>s+g.n*g.m.xp,0);
+  const mu=st.rules==="2014"?mult14(n,st.count):1;return {n,raw,adj:Math.round(raw*mu),mu}}
+
+function generate(){
+  const B=budget(),L=st.levels.slice(0,st.count),avg=L.reduce((a,b)=>a+b,0)/L.length;
+  const pool=M.filter(m=>st.env==="*"||m.env.includes(st.env));
+  const maxCR=Math.max(1,Math.ceil(avg*(st.diff>=2?1.5:1.25))+(avg<3?1:2));
+  const usable=pool.filter(m=>m.cr<=maxCR&&m.xp<=B.hi);
+  const maxN=Math.min(14,Math.max(6,st.count*3));
+  const found=[];
+  for(let k=0;k<4000&&found.length<40;k++){
+    const kind=pick(["solo","pack","pack","lead","lead"]);
+    let g;
+    if(kind==="solo"){const m=pick(usable);if(!m)break;g=[{m,n:1}]}
+    else if(kind==="pack"){const m=pick(usable);g=[{m,n:R(2,maxN)}]}
+    else{const lead=pick(usable),mins=usable.filter(x=>x!==lead&&x.xp<lead.xp&&compatible(lead,x));if(!mins.length)continue;
+      const mm=pick(mins);g=[{m:lead,n:Math.random()<.8?1:2},{m:mm,n:R(2,maxN-1)}]}
+    const s=score(g);
+    if(s.n>maxN||s.adj<B.lo||(B.incl?s.adj>B.hi:s.adj>=B.hi))continue;
+    if(g.some(x=>x.m.xp*Math.max(1,s.n/2)<s.raw/18))continue; // no trivial filler
+    found.push({kind,g,s});
+  }
+  return {B,enc:found.length?pick(found):null,avg};
+}
+
+// ---------- RENDER CONTROLS ----------
+function seg(id,list,cur,on){const el=$(id);el.innerHTML=list.map((x,i)=>`<button data-i="${i}" aria-pressed="${i===cur}">${x}</button>`).join("");
+  el.onclick=e=>{const b=e.target.closest("button");if(!b)return;on(+b.dataset.i);}}
+function drawControls(){
+  document.querySelectorAll("#rules button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===st.rules));
+  const d=DIFF[st.rules];if(st.diff>=d.length)st.diff=d.length-1;
+  seg("diff",d.map(x=>x[0]),st.diff,i=>{st.diff=i;save();drawControls()});
+  $("count").value=st.count;
+  while(st.levels.length<st.count)st.levels.push(st.levels[st.levels.length-1]||1);
+  $("players").innerHTML=Array.from({length:st.count},(_,i)=>`<label for="p${i}">P${i+1}<input id="p${i}" type="number" min="1" max="20" value="${st.levels[i]}" data-i="${i}"></label>`).join("");
+  $("envs").innerHTML=ENVS.map(([c,n])=>`<button data-v="${c}" aria-pressed="${c===st.env}">${n}</button>`).join("");
+}
+$("rules").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+  const prev=DIFF[st.rules][st.diff][0];st.rules=b.dataset.v;
+  st.diff=st.rules==="2024"?({Easy:0,Medium:1,Hard:2,Deadly:2}[prev]??1):({Low:0,Moderate:1,High:2}[prev]??1);save();drawControls()};
+$("count").oninput=e=>{st.count=Math.max(1,Math.min(10,+e.target.value||1));save();drawControls()};
+$("allLvl").oninput=e=>{const v=Math.max(1,Math.min(20,+e.target.value||1));st.levels=st.levels.map(()=>v);save();drawControls()};
+$("players").oninput=e=>{const i=+e.target.dataset.i;st.levels[i]=Math.max(1,Math.min(20,+e.target.value||1));save()};
+$("envs").onclick=e=>{const b=e.target.closest("button");if(!b)return;st.env=b.dataset.v;save();drawControls()};
+
+// ---------- RENDER RESULT ----------
+const history=[];let current=null;
+function roll(){
+  const {B,enc,avg}=generate();
+  const envName=ENVS.find(e=>e[0]===st.env)[1];
+  const dname=DIFF[st.rules][st.diff][0];
+  if(!enc){$("sheet").innerHTML=`<h2>No fit found</h2><p class="warn">Nothing in ${envName} lands in the ${dname} band for this party. Try another setting, a different difficulty, or Anywhere.</p>`;current=null;return}
+  const envKey=st.env==="*"?pick(enc.g[0].m.env.split("")):st.env;
+  const where=ENVS.find(e=>e[0]===envKey)[1];
+  const lead=enc.g[0];
+  const who=enc.kind==="solo"?`A ${lead.m.name.toLowerCase()}`:enc.kind==="pack"?`${lead.n} ${plural(lead.m.name).toLowerCase()}`:`A band of ${plural(enc.g[1].m.name).toLowerCase()} led by ${lead.n>1?lead.n+" "+plural(lead.m.name).toLowerCase():"a "+lead.m.name.toLowerCase()}`;
+  current={id:Date.now(),title:titleFor(enc),where,scene:pick(SCENES[envKey]),hook:`${who} ${pick(HOOKS[enc.kind])}.`,twist:pick(TWISTS),enc,B,dname,envName,party:st.levels.slice(0,st.count),rules:st.rules,avg};
+  history.unshift(current);if(history.length>8)history.pop();
+  show(current);
+}
+function plural(n){if(/Wolf$/.test(n))return n.replace(/Wolf$/,"Wolves");if(/Swarm/.test(n))return n.replace("Swarm","Swarms");if(/(Folk|folk|Merfolk|Lizardfolk|Sahuagin|Drow|Thri-kreen|Deep Gnome)$/.test(n))return n==="Deep Gnome"?"Deep Gnomes":n;
+  if(/[sx]$/.test(n))return n+"es";if(/y$/.test(n)&&!/[aeiou]y$/.test(n))return n.slice(0,-1)+"ies";if(/Mummy$/.test(n))return n;return n+"s"}
+function titleFor(enc){const m=enc.g[0].m.name;
+  return enc.kind==="solo"?pick([`The ${m}`,`Lone ${m}`,`${m} Sighted`]):enc.kind==="pack"?pick([`${plural(m)} on the Prowl`,`A Pack of ${plural(m)}`,`${plural(m)}!`]):pick([`${m}'s Warband`,`The ${m} and Company`,`${m} Holds the Road`])}
+
+function show(c){
+  current=c;const {enc,B}=c,s=enc.s,cols=DIFF[c.rules];
+  const top=c.rules==="2014"?Math.round(B.t[3]*1.5):Math.round(B.t[2]*1.25);
+  const pct=v=>Math.min(100,v/top*100);
+  const marks=c.rules==="2014"?B.t:B.t;
+  const zones=[0,...marks,top].map(pct);
+  const zc=c.rules==="2014"?["var(--chip)","var(--easy)","var(--med)","var(--hard)","var(--deadly)"]:["var(--chip)","var(--easy)","var(--med)","var(--deadly)"];
+  const bar=zones.slice(0,-1).map((z,i)=>`<span style="width:${zones[i+1]-z}%;background:${zc[i]};opacity:${i?0.85:1}"></span>`).join("");
+  const scale=marks.map((t,i)=>`<i style="left:${pct(t)}%">${cols[i][0][0]} ${fmt(t)}</i>`).join("");
+  const rows=enc.g.map(({m,n})=>`<tr><td class="n">${n}×</td><td><a class="nm" href="https://www.dndbeyond.com/monsters?filter-search=${encodeURIComponent(m.name)}" target="_blank" rel="noopener">${m.name}</a><div class="ty">${m.type}</div></td><td class="n">${crTxt(m.cr)}</td><td class="n">${m.ac}</td><td class="n">${m.hp}</td><td class="n">${fmt(m.xp)}</td></tr>`).join("");
+  $("sheet").innerHTML=`
+   <div class="tagline"><span class="pill diff" style="background:var(${cols[st.diff]?.[1]||"--med"})">${c.dname}</span><span class="pill">${c.where}</span><span class="pill">${c.party.length} PCs · ${c.party.every(l=>l===c.party[0])?"level "+c.party[0]:"levels "+c.party.join("/")}</span><span class="pill">${c.rules} rules</span></div>
+   <h2>${c.title}</h2>
+   <p class="scene"><b>Scene.</b> ${c.scene}. ${c.hook}</p>
+   <div class="tw"><table><thead><tr><th>#</th><th>Creature</th><th>CR</th><th>AC</th><th>HP</th><th>XP each</th></tr></thead><tbody>${rows}</tbody></table></div>
+   <div class="meter"><span class="lbl">Where this lands</span>
+     <div class="barwrap"><div class="bar">${bar}</div><div class="mark" style="left:${pct(s.adj)}%" title="This encounter"></div></div>
+     <div class="scale">${scale}</div></div>
+   <div class="math">
+     <div><small>Monster XP</small><b>${fmt(s.raw)}</b></div>
+     ${c.rules==="2014"?`<div><small>Multiplier (${s.n} foes)</small><b>×${s.mu}</b></div><div><small>Adjusted XP</small><b>${fmt(s.adj)}</b></div>`:`<div><small>Budget</small><b>${fmt(B.hi)}</b></div>`}
+     <div><small>XP per PC</small><b>${fmt(Math.floor(s.raw/c.party.length))}</b></div>
+   </div>
+   <p class="twist"><b>${c.twist[0]}.</b> ${c.twist[1]}</p>
+   <div class="actions"><button class="primary" id="again">Reroll</button><button id="copy">Copy as text</button></div>`;
+  $("again").onclick=roll;$("copy").onclick=copy;
+  $("histBox").hidden=history.length<2;
+  $("hist").innerHTML=history.slice(1).map(h=>`<button data-id="${h.id}"><span>${h.title} · ${h.where}</span><span>${h.dname} · ${fmt(h.enc.s.adj)} XP</span></button>`).join("");
+}
+$("hist").onclick=e=>{const b=e.target.closest("button");if(!b)return;const h=history.find(x=>x.id==b.dataset.id);
+  history.splice(history.indexOf(h),1);history.unshift(h);show(h);window.scrollTo({top:0,behavior:"smooth"})};
+function copy(){const c=current;if(!c)return;
+  const t=`${c.title} (${c.dname}, ${c.where})\n${c.scene}. ${c.hook}\n`+c.enc.g.map(({m,n})=>`  ${n}× ${m.name} — CR ${crTxt(m.cr)}, AC ${m.ac}, HP ${m.hp}, ${fmt(m.xp)} XP`).join("\n")+
+   `\nXP: ${fmt(c.enc.s.raw)} raw${c.rules==="2014"?`, ${fmt(c.enc.s.adj)} adjusted`:""}; ${fmt(Math.floor(c.enc.s.raw/c.party.length))} per PC\nTwist: ${c.twist[0]}. ${c.twist[1]}`;
+  navigator.clipboard.writeText(t).then(()=>toast("Copied encounter"),()=>toast("Copy isn't allowed here; select the text instead"))}
+function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),1800)}
+$("go").onclick=()=>{roll();if(window.innerWidth<860)$("sheet").scrollIntoView({behavior:"smooth"})};
+
+drawControls();roll();
+</script>
+</body></html>

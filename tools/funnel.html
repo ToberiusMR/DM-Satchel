@@ -1,0 +1,186 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Peasant Funnel Muster</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&family=Courier+Prime:wght@400;700&display=swap">
+<style>
+/* Layout: a village muster roll — a ledger header with controls, then a grid of peasant "entries" like slips pinned to a board. */
+:root{
+  --bg:#e9ebe4; --paper:#f7f8f3; --ink:#1f2a2e; --muted:#5d6a68; --rule:#c9cfc6;
+  --accent:#2f5d62; --blood:#8c2f2f; --chip:#dfe5dc;
+  --display:"IM Fell English SC", "Iowan Old Style", Georgia, serif;
+  --body:"Alegreya Sans", "Gill Sans", "Segoe UI", system-ui, sans-serif;
+  --mono:"Courier Prime", "Courier New", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#161c1d; --paper:#1f2729; --ink:#e3e7df; --muted:#9aa8a4; --rule:#34403f;
+  --accent:#86b8b3; --blood:#e07a6e; --chip:#2a3436; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#161c1d; --paper:#1f2729; --ink:#e3e7df; --muted:#9aa8a4; --rule:#34403f;
+  --accent:#86b8b3; --blood:#e07a6e; --chip:#2a3436; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;border-bottom:2px solid var(--ink);padding-bottom:14px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(2rem,5vw,3rem);line-height:1;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:6px 0 0;max-width:60ch}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+label.f{display:flex;flex-direction:column;gap:3px;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+input[type=number]{width:72px;font:inherit;font-size:1rem;padding:7px 8px;border:1px solid var(--rule);border-radius:4px;background:var(--paper);color:var(--ink);font-family:var(--mono)}
+button{font:inherit;font-weight:500;cursor:pointer;border-radius:4px;padding:8px 14px;border:1px solid var(--ink);background:var(--paper);color:var(--ink)}
+button.primary{background:var(--ink);color:var(--paper)}
+button:hover{border-color:var(--accent)} button.primary:hover{background:var(--accent);border-color:var(--accent)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tally{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.tally b{color:var(--ink)}
+.group{display:flex;flex-direction:column;gap:10px}
+.group h2{font-family:var(--display);font-weight:400;font-size:1.35rem;margin:0;border-bottom:1px solid var(--rule);padding-bottom:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:3px;padding:12px 14px;display:flex;flex-direction:column;gap:8px;min-width:0;position:relative}
+.card.dead{opacity:.55}
+.card.dead .name{text-decoration:line-through;text-decoration-color:var(--blood);text-decoration-thickness:2px}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.name{font-family:var(--display);font-size:1.25rem;line-height:1.1;margin:0}
+.occ{color:var(--accent);font-weight:700;font-size:.9rem}
+.acts{display:flex;gap:4px;flex-shrink:0}
+.acts button{padding:3px 7px;font-size:.75rem;border-color:var(--rule)}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);border:1px solid var(--rule);border-radius:3px;font-family:var(--mono);text-align:center;font-variant-numeric:tabular-nums}
+.stats div{padding:4px 0;border-right:1px solid var(--rule)} .stats div:last-child{border-right:0}
+.stats small{display:block;font-size:.62rem;letter-spacing:.08em;color:var(--muted)}
+.stats strong{display:block;font-size:1.05rem}
+.stats em{font-style:normal;font-size:.75rem;color:var(--muted)}
+.stats .hi em{color:var(--accent)} .stats .lo em{color:var(--blood)}
+.vit{display:flex;gap:6px;flex-wrap:wrap;font-family:var(--mono);font-size:.82rem}
+.vit span{background:var(--chip);padding:2px 7px;border-radius:3px}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:.9rem}
+dt{font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding-top:3px}
+dd{margin:0;min-width:0}
+.omen{border-top:1px dashed var(--rule);padding-top:6px;font-size:.85rem}
+.omen b{font-family:var(--display);font-weight:400;font-size:.95rem}
+.note{font-size:.85rem;color:var(--muted);max-width:75ch}
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:4px;font-size:.9rem}
+@media (max-width:420px){.stats strong{font-size:.95rem}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Peasant Funnel Muster</h1>
+      <p class="sub">Random level-0 commoners for a 5e funnel. 3d6 in order, no rerolls, no mercy.</p>
+    </div>
+    <div class="controls">
+      <label class="f" for="players">Players<input id="players" type="number" min="1" max="8" value="4"></label>
+      <label class="f" for="each">Peasants each<input id="each" type="number" min="1" max="6" value="4"></label>
+      <button class="primary" id="roll">Roll the village</button>
+      <button id="copy">Copy as text</button>
+    </div>
+  </header>
+  <div class="tally" id="tally"></div>
+  <div id="out" class="wrap" style="gap:24px"></div>
+  <p class="note">House rules baked in: HP is 1d4 + Con (minimum 1). AC is 10 + Dex. Each peasant is proficient (+2) with their trade weapon only. Omens work once per life. Click <b>Dead</b> to strike a name from the roll; survivors after the funnel pick a class at 1st level.</p>
+</div>
+
+<script>
+const R=n=>Math.floor(Math.random()*n)+1, pick=a=>a[Math.floor(Math.random()*a.length)];
+const d=(n,s)=>{let t=0;for(let i=0;i<n;i++)t+=R(s);return t};
+const mod=s=>Math.floor((s-10)/2), sg=n=>(n>=0?"+":"")+n;
+
+const W={
+ club:["Club","1d4 bludgeoning"], cudgel:["Cudgel (club)","1d4 bludgeoning"], dagger:["Dagger","1d4 piercing",1],
+ knife:["Knife (dagger)","1d4 piercing",1], cleaver:["Cleaver (handaxe)","1d6 slashing"], hammer:["Hammer (light hammer)","1d4 bludgeoning"],
+ axe:["Hand axe","1d6 slashing"], sickle:["Sickle","1d4 slashing"], staff:["Staff","1d6 bludgeoning"], spear:["Spear","1d6 piercing"],
+ pitchfork:["Pitchfork (spear)","1d6 piercing"], shovel:["Shovel (club)","1d4 bludgeoning"], sling:["Sling","1d4 bludgeoning",2],
+ shortbow:["Shortbow","1d6 piercing",2], mace:["Mace","1d6 bludgeoning"], flail:["Flail (threshing)","1d8 bludgeoning"],
+ pick:["Pick","1d6 piercing"], awl:["Awl (dagger)","1d4 piercing",1], scissors:["Shears (dagger)","1d4 piercing",1],
+ trident:["Fish spear","1d6 piercing"], whip:["Whip","1d4 slashing",1], darts:["Darts ×3","1d4 piercing",2], scythe:["Scythe (glaive)","1d8 slashing"],
+ rollingpin:["Rolling pin (club)","1d4 bludgeoning"], oar:["Oar (quarterstaff)","1d6 bludgeoning"], net:["Net + knife","restrain / 1d4",1]
+};
+const OCC=[
+ ["Apothecary","staff","pouch of dried herbs"],["Baker","rollingpin","sack of flour"],["Barber","scissors","razor and strop"],
+ ["Beekeeper","club","jar of honey"],["Blacksmith","hammer","steel tongs"],["Bonesetter","club","roll of linen splints"],
+ ["Brewer","club","small keg of ale"],["Butcher","cleaver","side of salted pork"],["Candlemaker","knife","bundle of 10 tallow candles"],
+ ["Carpenter","hammer","saw and 20 nails"],["Charcoal burner","axe","sack of charcoal"],["Cheesemaker","cudgel","wheel of hard cheese"],
+ ["Chimney sweep","club","brush and soot bag"],["Cobbler","awl","pair of good boots"],["Cooper","hammer","empty barrel"],
+ ["Cutpurse","dagger","3 stolen coin purses (1d6 cp each)"],["Ditch digger","shovel","fine mud, 1 bucket"],["Dyer","staff","pot of indigo dye"],
+ ["Falconer","dagger","hooded hawk"],["Ferryman","oar","10 ft of rope and a lantern"],["Fisher","net","a string of fish"],
+ ["Fletcher","shortbow","bundle of 12 arrows"],["Fortune-teller","dagger","deck of painted cards"],["Gambler","club","loaded dice"],
+ ["Goatherd","staff","goat (yes, a whole goat)"],["Gravedigger","shovel","trowel and a tallow lamp"],["Grave robber","pick","sack of grave goods (4 cp worth)"],
+ ["Gong farmer","shovel","pail of… you know"],["Herbalist","sickle","basket of wild herbs"],["Hunter","shortbow","deer pelt"],
+ ["Innkeeper","club","ring of 6 keys"],["Jester","darts","motley cap with bells"],["Leatherworker","awl","scrap leather and thread"],
+ ["Locksmith","dagger","set of crude picks"],["Mason","hammer","chisel and a block of stone"],["Merchant","dagger","4 gp and a ledger"],
+ ["Miller","club","sack of grain"],["Miner","pick","lantern and 1 flask of oil"],["Minstrel","dagger","battered lute"],
+ ["Novice priest","mace","holy symbol and prayer beads"],["Orphan","club","rag doll"],["Ostler","whip","horseshoes and a carrot"],
+ ["Pig farmer","pitchfork","piglet"],["Potter","club","clay jug"],["Rat catcher","club","cage with 1d4 rats"],
+ ["Rope maker","knife","50 ft of hemp rope"],["Scribe","dagger","ink, quill and parchment"],["Shepherd","sling","sheep and a crook"],
+ ["Smuggler","sling","waterproof sack"],["Squire","mace","dented helmet"],["Tailor","scissors","bolt of cloth"],
+ ["Tanner","knife","3 hides, very smelly"],["Thatcher","sickle","bundle of reeds"],["Tinker","hammer","bag of pots and pans"],
+ ["Trapper","sling","1d4 rabbit snares"],["Turnip farmer","pitchfork","sack of turnips"],["Washerwoman","club","washboard and lye soap"],
+ ["Watchman","spear","horn and a lantern"],["Weaver","dagger","fine tapestry (5 gp)"],["Wheat farmer","flail","sack of wheat"],
+ ["Woodcutter","axe","bundle of firewood"],["Reaper","scythe","straw hat and waterskin"],["Wainwright","club","cart wheel"],["Eel catcher","trident","basket of live eels"]
+];
+const FIRST=["Agnes","Aldo","Bertha","Bram","Cuthbert","Dora","Edda","Fenn","Gilly","Godric","Hob","Ida","Jory","Kat","Lem","Mabel","Ned","Odo","Peg","Quill","Rolf","Sela","Tam","Ulla","Vane","Wat","Wenna","Yorick","Alys","Benedikt","Cress","Dunstan","Elsa","Ferris","Greta","Hamm","Isolde","Jenkin","Lark","Merrin","Nan","Osric","Perrin","Rosamund","Silas","Tilda","Ulric","Wilmot","Bess","Garth","Hilde","Piet","Maud","Grub","Ottilie","Brannoc","Frida","Sim"];
+const LAST=["Ashby","Barrow","Crumb","Dimble","Fenwick","Gorse","Hollins","Inchley","Mudge","Nettle","Oakes","Pellow","Rook","Sallow","Thorne","Underhill","Vetch","Wickham","Yarrow","Bramble","Cobb","Dunn","Gristle","Hatch","Lumpkin","Marsh","Pike","Quarry","Sedge","Tump"];
+const EPI=["the Younger","Two-Toes","the Loud","One-Ear","the Unwashed","Half-Penny","the Pious","Crookback","Lucky","the Unlucky","Redhand","Pigsnout","the Tall","Squint","Wartnose"];
+const TRINKET=["a tooth of unknown origin","a lock of a dead lover's hair","a carved wooden saint with no face","a copper ring that's always cold","half a treasure map (the boring half)","a smooth river stone that hums at night","a bent silver spoon","a letter they can't read","a tiny bell with no clapper","a dried frog in a matchbox","a button from a nobleman's coat","a jar of buttons","a lucky rabbit's foot (the rabbit was not lucky)","a stub of black candle","a wooden whistle shaped like an owl","a pressed flower from a grave","a coin from no known kingdom","a key to a door they've never found","a brass thimble","a knotted string with 13 knots"];
+const QUIRK=["laughs at funerals","won't cross running water without spitting","counts everything out loud","sure the miller's wife is a witch","hums the same 4 notes constantly","never removes their hat","terrified of geese","talks to their weapon","claims to be the lost heir of a duke","eats anything on a dare","owes the innkeeper 3 sp","can't stand the sight of blood","prays to a saint nobody's heard of","sleepwalks","picks fights with taller people","knows every village rumor, believes all of them","collects bones","has never seen the sea and is very curious","speaks only in proverbs when nervous","once saw a dragon (it was a cow)"];
+const OMEN=[
+ ["Born under the Wolf Moon","Advantage on one attack roll."],["The Midwife's Blessing","Reroll one failed death save."],
+ ["Caul-born","Advantage on one save against magic."],["Crow at the Window","Once, ask the DM one yes/no question about a room you're in."],
+ ["The Harvest Star","Regain 1d4 HP when you'd otherwise drop to 0 (once)."],["Seventh Child","Advantage on one Wisdom check."],
+ ["Struck by Lightning (and Lived)","Resist one instance of lightning or thunder damage."],["Lucky Sign of the Horseshoe","Turn one natural 1 into a 10."],
+ ["Born During the Flood","Automatically succeed one check to swim or avoid drowning."],["The Hangman's Coin","Once, an enemy's critical hit becomes a normal hit."],
+ ["Born on a Feast Day","Advantage on one Charisma check."],["Kissed by a Wandering Saint","Once, add +1d4 to an ally's roll within 30 ft."],
+ ["Footsteps of the Fox","Advantage on one Dexterity (Stealth) check."],["The Black Cat Crossed","Once, force a creature to reroll an attack against you."],
+ ["Bull's Year","Advantage on one Strength check or save."],["Born in a Cemetery","Undead have disadvantage on their first attack against you."],
+ ["Ill-Starred","No luck at all. The DM owes you nothing."],["Twin Who Survived","Once, take a hit meant for an adjacent ally."],
+ ["Born at Moonless Midnight","See in dim light as if bright for one scene."],["The Old Man's Prophecy","Once, roll a d20 and keep it; swap it for any one roll later."]
+];
+const ABIL=["STR","DEX","CON","INT","WIS","CHA"];
+
+function name(){const f=pick(FIRST);return Math.random()<.3?`${f} ${pick(EPI)}`:`${f} ${pick(LAST)}`}
+function peasant(){
+  const s=ABIL.map(()=>d(3,6)), m=s.map(mod);
+  const o=pick(OCC), w=W[o[1]];
+  const useDex=w[2]===1?m[1]>m[0]:w[2]===2;
+  const atk=2+(useDex?m[1]:m[0]);
+  const hp=Math.max(1,R(4)+m[2]);
+  return {id:Math.random().toString(36).slice(2),name:name(),occ:o[0],s,m,hp,ac:10+m[1],init:m[1],
+    weapon:w[0],dmg:w[1],atk,goods:o[2],trinket:pick(TRINKET),quirk:pick(QUIRK),omen:pick(OMEN),cp:d(5,12),dead:false};
+}
+let roster=[];
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function card(p){
+  return `<article class="card${p.dead?" dead":""}" data-id="${p.id}">
+   <div class="top"><div><p class="name">${esc(p.name)}</p><div class="occ">${esc(p.occ)}</div></div>
+    <div class="acts"><button data-a="re" title="Reroll this peasant">Reroll</button><button data-a="dead">${p.dead?"Revive":"Dead"}</button></div></div>
+   <div class="stats">${ABIL.map((a,i)=>`<div class="${p.m[i]>=1?"hi":p.m[i]<=-2?"lo":""}"><small>${a}</small><strong>${p.s[i]}</strong><em>${sg(p.m[i])}</em></div>`).join("")}</div>
+   <div class="vit"><span>HP ${p.hp}</span><span>AC ${p.ac}</span><span>Init ${sg(p.init)}</span><span>${p.cp} cp</span></div>
+   <dl><dt>Weapon</dt><dd>${esc(p.weapon)}, ${sg(p.atk)} to hit, ${esc(p.dmg)}${p.dmg.match(/^\d/)?" "+sg(p.atk-2):""}</dd>
+   <dt>Goods</dt><dd>${esc(p.goods)}</dd><dt>Trinket</dt><dd>${esc(p.trinket)}</dd><dt>Quirk</dt><dd>${esc(p.quirk)}</dd></dl>
+   <div class="omen"><b>${esc(p.omen[0])}.</b> ${esc(p.omen[1])}</div></article>`;
+}
+function render(){
+  const each=+document.getElementById("each").value||4;
+  const groups=[];for(let i=0;i<roster.length;i+=each)groups.push(roster.slice(i,i+each));
+  document.getElementById("out").innerHTML=groups.map((g,i)=>`<section class="group"><h2>Player ${i+1}</h2><div class="grid">${g.map(card).join("")}</div></section>`).join("");
+  const alive=roster.filter(p=>!p.dead).length;
+  document.getElementById("tally").innerHTML=`<span>Mustered <b>${roster.length}</b></span><span>Standing <b>${alive}</b></span><span>Fallen <b>${roster.length-alive}</b></span>`;
+  try{localStorage.setItem("funnel",JSON.stringify(roster))}catch(e){}
+}
+function rollAll(){
+  const n=Math.min(8,Math.max(1,+document.getElementById("players").value||4))*Math.min(6,Math.max(1,+document.getElementById("each").value||4));
+  roster=Array.from({length:n},peasant);render();
+}
+document.getElementById("roll").onclick=rollAll;
+document.getElementById("out").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;const id=b.closest(".card").dataset.id;const i=roster.findIndex(p=>p.id===id);
+  if(b.dataset.a==="re")roster[i]=peasant(); else roster[i].dead=!roster[i].dead; render();
+});
+function toast(t){const el=document.createElement("div");el.className="toast";el.textContent=t;document.body.appendChild(el);setTimeout(()=>el.remove(),1800)}
+document.getElementById("copy").onclick=()=>{
+  const txt=roster.map(p=>`${p.name}${p.dead?" (DEAD)":""} — ${p.occ}\n${ABIL.map((a,i)=>`${a} ${p.s[i]} (${sg(p.m[i])})`).join("  ")}\nHP ${p.hp}  AC ${p.ac}  Init ${sg(p.init)}  ${p.cp} cp\nWeapon: ${p.weapon}, ${sg(p.atk)} to hit, ${p.dmg}\nGoods: ${p.goods} | Trinket: ${p.trinket}\nQuirk: ${p.quirk}\nOmen: ${p.omen[0]} — ${p.omen[1]}`).join("\n\n");
+  navigator.clipboard.writeText(txt).then(()=>toast("Copied the whole roll"),()=>{const ta=document.createElement("textarea");ta.value=txt;document.body.appendChild(ta);ta.select();toast("Text selected, press Ctrl+C");setTimeout(()=>ta.remove(),4000)});
+};
+try{const s=JSON.parse(localStorage.getItem("funnel")||"null");if(s&&s.length){roster=s;render()}else rollAll()}catch(e){rollAll()}
+</script>
+</body></html>

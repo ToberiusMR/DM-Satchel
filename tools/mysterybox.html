@@ -1,0 +1,328 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>The Wandering Coffer</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=Barlow:ital,wght@0,400;0,500;0,700;1,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one deliberate dark look — a torchlit stage with the coffer centered, the reveal card rising above it; settings and the spin log sit in two columns underneath. */
+:root{
+  --bg:#0f0d14; --panel:#1a1722; --panel2:#221e2c; --ink:#ece6f5; --muted:#a49cb3; --rule:#342e40;
+  --glow:#5ef0d6; --gold:#e8b44c; --wood:#5a3a22; --wood2:#3b2416; --danger:#ff5b5b;
+  --r-common:#b9b4c2; --r-uncommon:#5fd17a; --r-rare:#5aa3ff; --r-very:#b77cff; --r-legend:#ff9d3c; --r-cursed:#ff5b5b;
+  --display:"Uncial Antiqua", "Papyrus", Georgia, serif;
+  --body:"Barlow", "Segoe UI", system-ui, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, "Courier New", monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:18px 40px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:10px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(1.9rem,5vw,2.8rem);margin:0;line-height:1;color:var(--gold);text-shadow:0 0 18px #e8b44c55}
+.sub{margin:4px 0 0;color:var(--muted)}
+.purse{font-family:var(--mono);font-size:.9rem;color:var(--muted);display:flex;gap:16px;flex-wrap:wrap}
+.purse b{color:var(--gold)}
+
+/* stage */
+.stage{position:relative;background:radial-gradient(ellipse at 50% 85%,#2a1f3a 0%,#140f1c 55%,var(--bg) 100%);border:1px solid var(--rule);border-radius:10px;
+  min-height:470px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding-block:18px 26px;overflow:hidden}
+.where{position:absolute;top:12px;left:14px;right:14px;display:flex;justify-content:space-between;gap:10px;font-size:.85rem;color:var(--muted);flex-wrap:wrap}
+.where b{color:var(--ink);font-weight:500}
+.beam{position:absolute;bottom:150px;left:50%;width:180px;height:330px;transform:translateX(-50%);
+  background:linear-gradient(to top,#5ef0d6aa,#5ef0d622 60%,transparent);clip-path:polygon(30% 100%,70% 100%,100% 0,0 0);opacity:0;transition:opacity .4s;filter:blur(2px);pointer-events:none}
+.stage.open .beam{opacity:1}
+.reveal{position:relative;z-index:2;width:min(340px,100%);min-height:150px;margin-bottom:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;
+  transform:translateY(30px) scale(.9);opacity:0;transition:transform .5s cubic-bezier(.2,1.4,.4,1),opacity .3s}
+.stage.open .reveal{transform:none;opacity:1}
+.glyph{width:64px;height:64px;filter:drop-shadow(0 0 10px currentColor)}
+.rname{font-family:var(--display);font-size:1.45rem;line-height:1.1;text-wrap:balance}
+.rmeta{font-family:var(--mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase}
+.spinning .rname{filter:blur(.4px)}
+
+/* the coffer */
+.chest{position:relative;width:230px;height:130px;margin-top:4px;z-index:1}
+.lid{position:absolute;left:0;right:0;top:0;height:52px;border-radius:60px 60px 6px 6px/40px 40px 6px 6px;
+  background:linear-gradient(180deg,#7a5232,var(--wood) 55%,var(--wood2));border:3px solid var(--gold);transform-origin:50% 100%;transition:transform .5s cubic-bezier(.3,1.5,.5,1);z-index:2}
+.lid::after{content:"";position:absolute;left:50%;top:6px;bottom:6px;width:26px;transform:translateX(-50%);background:var(--gold);opacity:.85;border-radius:3px}
+.body{position:absolute;left:0;right:0;bottom:0;height:84px;background:linear-gradient(180deg,var(--wood),var(--wood2));border:3px solid var(--gold);border-radius:4px 4px 8px 8px}
+.body::before{content:"?";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--display);font-size:2.6rem;color:var(--glow);text-shadow:0 0 12px var(--glow)}
+.body::after{content:"";position:absolute;inset:auto 12px 10px;height:3px;background:var(--gold);opacity:.5}
+.stage.open .lid{transform:translateY(-34px) rotateX(64deg)}
+.stage.idle .chest{animation:bob 3s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.stage.flee .chest{animation:flee 2.2s ease-in forwards}
+@keyframes flee{0%{transform:none}15%{transform:rotate(-6deg)}30%{transform:rotate(6deg)}45%{transform:rotate(-8deg) translateY(-10px)}100%{transform:translateY(-420px) rotate(20deg);opacity:0}}
+
+.ctrls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:18px;z-index:3;position:relative}
+button,select,input{font:inherit;color:var(--ink)}
+button{cursor:pointer;border:1px solid var(--rule);background:var(--panel2);border-radius:6px;padding:9px 14px;font-weight:500}
+button:hover:not(:disabled){border-color:var(--glow)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--gold);border-color:var(--gold);color:#1a1208;font-weight:700;font-size:1.05rem;padding:11px 22px;box-shadow:0 0 18px #e8b44c44}
+button.take{background:var(--glow);border-color:var(--glow);color:#06221d;font-weight:700}
+:focus-visible{outline:2px solid var(--glow);outline-offset:2px}
+.desc{max-width:520px;text-align:center;margin:10px auto 0;color:var(--ink);font-size:.95rem;min-height:2.9em;position:relative;z-index:3}
+.desc i{color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;align-items:start}
+@media (max-width:780px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.card h2{font-family:var(--display);font-weight:400;font-size:1.15rem;margin:0;color:var(--gold)}
+.field{display:flex;flex-direction:column;gap:5px}
+.lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.09em;color:var(--muted)}
+.seg{display:flex;gap:4px;flex-wrap:wrap}.seg button{flex:1 1 auto;padding:7px 9px;font-size:.9rem}
+.seg button[aria-pressed=true]{border-color:var(--glow);color:var(--glow);background:#5ef0d614}
+input[type=number],input[type=text],textarea{background:var(--panel2);border:1px solid var(--rule);border-radius:5px;padding:7px 9px}
+input[type=number]{width:90px;font-family:var(--mono)}
+textarea{font:inherit;color:var(--ink);width:100%;min-height:76px;resize:vertical;font-size:.9rem}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.92rem}
+.checks label{display:flex;gap:6px;align-items:center}
+input[type=checkbox]{accent-color:var(--glow)}
+.odds{display:flex;height:10px;border-radius:5px;overflow:hidden}
+.odds span{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-family:var(--mono);font-size:.72rem;color:var(--muted)}
+.legend b{font-weight:600}
+.log{display:flex;flex-direction:column;gap:0;max-height:440px;overflow:auto}
+.log div{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--rule);font-size:.92rem}
+.log .n{font-family:var(--mono);color:var(--muted);font-size:.78rem}
+.log .s{font-family:var(--mono);font-size:.72rem;text-transform:uppercase}
+.log .fled{color:var(--danger);font-style:italic}
+.empty{color:var(--muted);font-size:.9rem;margin:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.note{font-size:.84rem;color:var(--muted);margin:0;max-width:75ch}
+@media (prefers-reduced-motion:reduce){.stage.idle .chest,.stage.flee .chest{animation:none}.lid,.reveal{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div><h1>The Wandering Coffer</h1><p class="sub">Pay the price, open the box, take what fate hands you. Sometimes it walks away.</p></div>
+    <div class="purse"><span>Spins <b id="spins">0</b></span><span>Gold spent <b id="spent">0</b></span></div>
+  </header>
+
+  <section class="stage idle" id="stage" aria-live="polite">
+    <div class="where"><span>The coffer rests at: <b id="loc">—</b></span><span id="costTag"></span></div>
+    <div class="beam"></div>
+    <div class="reveal" id="reveal"><svg class="glyph" id="glyph" viewBox="0 0 64 64"></svg><div class="rname" id="rname"></div><div class="rmeta" id="rmeta"></div></div>
+    <div class="chest"><div class="lid"></div><div class="body"></div></div>
+    <div class="ctrls" id="ctrls"></div>
+  </section>
+  <p class="desc" id="desc"><i>Describe it to the table: an old iron-bound coffer with a glowing question mark on its front. It hums faintly.</i></p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Box settings</h2>
+      <div class="field"><span class="lbl">Party tier (shifts the odds)</span>
+        <div class="seg" id="tier"><button data-v="0">Lv 1–4</button><button data-v="1">5–10</button><button data-v="2">11–16</button><button data-v="3">17–20</button></div>
+        <div class="odds" id="odds"></div><div class="legend" id="legend"></div></div>
+      <div class="row">
+        <div class="field"><label class="lbl" for="cost">Cost per spin (gp)</label><input id="cost" type="number" min="0" step="5" value="100"></div>
+        <div class="field"><label class="lbl" for="flee">Wander chance</label><select id="flee" style="background:var(--panel2);border:1px solid var(--rule);border-radius:5px;padding:7px 9px">
+          <option value="0">Never</option><option value="0.06">Rare (1 in 16)</option><option value="0.1" selected>Normal (1 in 10)</option><option value="0.18">Restless (1 in 6)</option></select></div>
+      </div>
+      <div class="field"><span class="lbl">What's in the box</span>
+        <div class="checks" id="cats"></div></div>
+      <div class="field"><label class="lbl" for="spots">Places it can wander to (one per line)</label>
+        <textarea id="spots"></textarea></div>
+      <div class="row"><button id="sound" aria-pressed="false">Sound: off</button><button id="resetLog">Clear log</button></div>
+    </div>
+
+    <div class="card">
+      <h2>What came out</h2>
+      <div class="log" id="log"></div>
+    </div>
+  </div>
+  <p class="note">Items are 5e magic items with short reminders of what they do; check the DMG for full rules. When the coffer grins a skull, it refunds the spin and wanders off to one of your locations. Leaving an item puts it back in the box.</p>
+</div>
+
+<script>
+// ---------- glyphs (simple line icons per category) ----------
+const G={
+ blade:'<path d="M46 6 L58 6 L58 18 L26 50 L14 38 Z" fill="none" stroke="currentColor" stroke-width="3"/><path d="M10 42 L22 54 M6 58 L16 48" stroke="currentColor" stroke-width="4" stroke-linecap="round"/>',
+ axe:'<path d="M20 58 L44 10" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M38 8 C54 6 60 20 54 30 L40 22 Z" fill="currentColor" opacity=".8"/>',
+ bow:'<path d="M18 6 C50 20 50 44 18 58" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M18 6 L18 58 M10 32 L50 32 M44 26 L52 32 L44 38" fill="none" stroke="currentColor" stroke-width="2.5"/>',
+ wand:'<path d="M12 54 L44 22" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M48 6 L51 15 L60 18 L51 21 L48 30 L45 21 L36 18 L45 15 Z" fill="currentColor"/>',
+ potion:'<path d="M26 6 H38 M28 6 V22 L16 40 C10 52 18 58 32 58 C46 58 54 52 48 40 L36 22 V6" fill="none" stroke="currentColor" stroke-width="3"/><path d="M19 42 H45 C48 50 42 54 32 54 C22 54 16 50 19 42Z" fill="currentColor" opacity=".7"/>',
+ ring:'<circle cx="32" cy="38" r="17" fill="none" stroke="currentColor" stroke-width="4"/><path d="M24 14 L32 6 L40 14 L32 22 Z" fill="currentColor"/>',
+ armor:'<path d="M32 6 L54 14 V30 C54 46 44 54 32 58 C20 54 10 46 10 30 V14 Z" fill="none" stroke="currentColor" stroke-width="3.5"/><path d="M32 16 V48 M20 30 H44" stroke="currentColor" stroke-width="3"/>',
+ trinket:'<path d="M12 22 H52 V54 H12 Z M8 14 H56 V22 H8 Z M32 14 V54" fill="none" stroke="currentColor" stroke-width="3"/><path d="M32 14 C24 2 14 8 20 14 M32 14 C40 2 50 8 44 14" fill="none" stroke="currentColor" stroke-width="3"/>',
+ skull:'<path d="M32 6 C16 6 8 18 10 32 C11 38 16 40 18 42 V52 H46 V42 C48 40 53 38 54 32 C56 18 48 6 32 6Z" fill="none" stroke="currentColor" stroke-width="3.5"/><circle cx="23" cy="28" r="6" fill="currentColor"/><circle cx="41" cy="28" r="6" fill="currentColor"/><path d="M27 52 V46 M32 52 V46 M37 52 V46" stroke="currentColor" stroke-width="3"/>',
+ star:'<path d="M32 4 L39 24 L60 24 L43 37 L49 58 L32 45 L15 58 L21 37 L4 24 L25 24 Z" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="32" r="6" fill="currentColor"/>'
+};
+// ---------- items: [name, rarity, category, glyph, text, attune] ----------
+// rarity: c u r v l x(cursed/joke)
+const I=[
+["Longsword","c","weapons","blade","Plain steel, well balanced. 1d8 slashing, versatile (1d10)."],
+["Greataxe","c","weapons","axe","Heavy and hungry. 1d12 slashing, two-handed."],
+["Heavy Crossbow","c","weapons","bow","1d10 piercing, range 100/400. Comes with 20 bolts."],
+["Rapier","c","weapons","blade","1d8 piercing, finesse. A duelist's blade with a dented guard."],
+["Glaive","c","weapons","axe","1d10 slashing, reach, two-handed."],
+["Longbow","c","weapons","bow","1d8 piercing, range 150/600. Comes with 20 arrows."],
+["Warhammer","c","weapons","axe","1d8 bludgeoning, versatile (1d10)."],
+["Potion of Healing ×3","c","consumables","potion","Each restores 2d4 + 2 HP."],
+["Spell Scroll (1st level)","c","consumables","wand","A random 1st-level spell, ready to cast once."],
+["Driftglobe","u","gear","trinket","Casts light or daylight and floats after you. No attunement."],
+["+1 Weapon","u","weapons","blade","Any weapon the finder chooses from the box's rack. +1 to attack and damage rolls."],
+["+1 Shield","u","armor","armor","+1 AC on top of the shield's normal bonus."],
+["Potion of Greater Healing ×2","u","consumables","potion","Each restores 4d4 + 4 HP."],
+["Bag of Holding","u","gear","trinket","Holds 500 lb in a 64 cubic-foot space. Never put it inside another one."],
+["Cloak of Protection","u","gear","armor","+1 to AC and saving throws.",1],
+["Javelin of Lightning","u","weapons","wand","Once a day, it becomes a 120-ft line of lightning: 4d6 damage, DEX save DC 13 for half."],
+["Wand of Magic Missiles","u","gear","wand","7 charges. Cast magic missile, 1 charge per spell level."],
+["Gauntlets of Ogre Power","u","gear","armor","Your Strength becomes 19.",1],
+["Immovable Rod","u","gear","wand","Press the button and it locks in place, holding up to 8,000 lb."],
+["Cap of Water Breathing","u","gear","trinket","Speak the command word to breathe underwater."],
+["Trident of Fish Command","u","weapons","axe","3 charges: cast dominate beast on a swimming beast.",1],
+["Adamantine Armor","u","armor","armor","Any critical hit against you becomes a normal hit."],
+["Boots of Elvenkind","u","gear","armor","Silent steps and advantage on Dexterity (Stealth) checks."],
+["Sending Stones","u","gear","ring","A matched pair. Cast sending to whoever holds the other stone once a day."],
+["Spell Scroll (3rd level)","u","consumables","wand","A random 3rd-level spell, ready to cast once."],
+["+2 Weapon","r","weapons","blade","+2 to attack and damage rolls."],
+["Flame Tongue","r","weapons","blade","Speak the word and it ignites: +2d6 fire damage and it sheds light.",1],
+["Necklace of Fireballs","r","consumables","star","1d6 + 3 beads. Throw one for a fireball: 5d6 fire, DEX save DC 15."],
+["Wand of Lightning Bolts","r","gear","wand","7 charges. Lightning bolt, DC 15, 1 charge per level.",1],
+["Ring of Protection","r","gear","ring","+1 to AC and saving throws.",1],
+["Cloak of Displacement","r","gear","armor","Attacks against you have disadvantage until you take damage.",1],
+["Boots of Speed","r","gear","armor","Click your heels: speed doubled and opportunity attacks against you have disadvantage, 10 minutes a day.",1],
+["Dagger of Venom","r","weapons","blade","+1 dagger. Once a day, coat it in poison: +2d10 poison and the target is poisoned, CON save DC 15."],
+["Mace of Disruption","r","weapons","axe","+2d6 radiant against fiends and undead. Undead at 25 HP or less must save or be destroyed.",1],
+["Bracers of Defense","r","armor","armor","+2 AC while you wear no armor and carry no shield.",1],
+["Folding Boat","r","gear","trinket","A small box that unfolds into a rowboat or a 24-ft sailing ship."],
+["Potion of Superior Healing ×2","r","consumables","potion","Each restores 8d4 + 8 HP."],
+["Oathbow","v","weapons","bow","Declare a sworn enemy: advantage and +3d6 piercing against it.",1],
+["Frost Brand","v","weapons","blade","+1d6 cold damage, fire resistance, puts out nearby flames.",1],
+["Dancing Sword","v","weapons","blade","Toss it and it fights on its own for up to 4 turns.",1],
+["Staff of Thunder and Lightning","v","gear","wand","+2 staff. Once each: lightning, thunder, a lightning strike, a thunderclap, and a thunder-and-lightning storm.",1],
+["Dwarven Thrower","v","weapons","axe","+3 warhammer that returns when thrown. +1d8 damage, 2d8 against giants.",1],
+["Animated Shield","v","armor","armor","It floats and guards you on its own for 1 minute, leaving your hands free.",1],
+["Belt of Fire Giant Strength","v","gear","armor","Your Strength becomes 25.",1],
+["Nine Lives Stealer","v","weapons","blade","+2 sword. On a crit against a creature under 100 HP: CON save DC 15 or it dies. 1d8 + 1 charges.",1],
+["Vorpal Sword","l","weapons","blade","+3. Ignores slashing resistance. On a natural 20, it cuts off the target's head.",1],
+["Holy Avenger","l","weapons","blade","+3. +2d10 radiant against fiends and undead. Allies within 10 ft get advantage on saves against spells. Paladins only.",1],
+["Luck Blade","l","weapons","blade","+1 to attack, damage and saving throws. Reroll once a day. Holds 1d4 − 1 wishes.",1],
+["Staff of the Magi","l","gear","wand","+2 staff that absorbs spells and holds 50 charges. A wizard's dream.",1],
+["Hammer of Thunderbolts","l","weapons","axe","+1 maul that stuns giants and throws itself back to you. Dwarves and giant-slayers prize it.",1],
+["Starfall Lantern-Gun","l","weapons","star","A brass tube that hums like a hive. Ranged spell attack, 120 ft, 4d10 radiant plus a 10-ft burst of 2d10. 12 charges, regains 1d6 + 2 at dawn.",1],
+["Deck of Many Things","l","cursed","star","Declare how many cards you draw before you draw any. Then pray."],
+["Bag of Devouring","v","cursed","trinket","Looks like a bag of holding. It eats what goes in, and sometimes the hand that reaches in."],
+["Berserker Axe","r","cursed","axe","+1 greataxe and +1 HP per level, but you must make a WIS save or go berserk when hurt.",1],
+["Shield of Missile Attraction","r","cursed","armor","Resistance to ranged weapon damage. Every ranged attack within 10 ft is aimed at you instead.",1],
+["Rubber Chicken of Distraction","x","cursed","trinket","Squeeze it as a bonus action. One creature that hears it must make a DC 10 WIS save or spend its reaction staring at you."],
+["Potion of Poison","u","cursed","potion","Looks, smells and tastes like a potion of healing. 3d6 poison damage, CON save DC 13 or poisoned."],
+["Bag of Beans","r","cursed","trinket","3d4 beans. Plant one and roll on the table. Could be a tree, could be a nest of 5d4 stirges."]
+];
+const RAR={c:["Common","--r-common"],u:["Uncommon","--r-uncommon"],r:["Rare","--r-rare"],v:["Very rare","--r-very"],l:["Legendary","--r-legend"],x:["Oddity","--r-cursed"]};
+const WEIGHTS=[{c:50,u:35,r:12,v:2.5,l:.5},{c:22,u:40,r:27,v:9,l:2},{c:8,u:24,r:36,v:24,l:8},{c:4,u:14,r:30,v:32,l:20}];
+const CATS=[["weapons","Weapons"],["armor","Armor & shields"],["gear","Wondrous gear"],["consumables","Potions & scrolls"],["cursed","Cursed & oddities"]];
+const DEFAULT_SPOTS="The ruined chapel on the cliff\nBehind the bar of the Snapping Line\nThe drowned crypt under the lighthouse\nA rowboat tied up at the old pier\nThe smugglers' tunnel beneath the manor\nThe lizardfolk shrine in the marsh";
+
+// ---------- state ----------
+const $=id=>document.getElementById(id);
+const st={tier:0,cost:100,flee:.1,cats:{weapons:1,armor:1,gear:1,consumables:1,cursed:1},spots:DEFAULT_SPOTS,loc:null,log:[],spins:0,spent:0,sound:false,since:0};
+try{Object.assign(st,JSON.parse(localStorage.getItem("coffer")||"{}"))}catch(e){}
+const save=()=>{try{localStorage.setItem("coffer",JSON.stringify(st))}catch(e){}};
+const spotsList=()=>st.spots.split("\n").map(s=>s.trim()).filter(Boolean);
+if(!st.loc)st.loc=spotsList()[0]||"Somewhere nearby";
+
+// ---------- audio (simple music-box chime) ----------
+let ac=null;
+function tone(f,t=0,d=.25,type="triangle",v=.08){if(!st.sound)return;try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();
+  const o=ac.createOscillator(),g=ac.createGain();o.type=type;o.frequency.value=f;g.gain.setValueAtTime(v,ac.currentTime+t);g.gain.exponentialRampToValueAtTime(.0001,ac.currentTime+t+d);
+  o.connect(g).connect(ac.destination);o.start(ac.currentTime+t);o.stop(ac.currentTime+t+d+.05)}catch(e){}}
+const SCALE=[523,587,659,784,880,1047,1175];
+
+// ---------- picking ----------
+function pool(){return I.filter(it=>st.cats[it[2]])}
+function draw(){
+  const p=pool();if(!p.length)return null;
+  const w=WEIGHTS[st.tier];
+  const weight=it=>it[2]==="cursed"?(w[it[1]==="x"?"u":it[1]]||5)*.35:(w[it[1]]||1);
+  let tot=p.reduce((s,it)=>s+weight(it),0),r=Math.random()*tot;
+  for(const it of p){r-=weight(it);if(r<=0)return it}return p[p.length-1];
+}
+
+// ---------- UI ----------
+let phase="idle",current=null;
+function setReveal(it,spinning){
+  const [name,rar,cat,gl]=it,col=`var(${RAR[rar][1]})`;
+  $("glyph").innerHTML=G[gl];$("glyph").style.color=col;$("rname").textContent=name;$("rname").style.color=col;
+  $("rmeta").textContent=spinning?"":`${RAR[rar][0]} · ${CATS.find(c=>c[0]===cat)[1]}${it[5]?" · attunement":""}`;$("rmeta").style.color=col;
+}
+function controls(){
+  const c=$("ctrls");
+  if(phase==="idle")c.innerHTML=`<button class="primary" id="spin">Open the coffer · ${st.cost} gp</button>`;
+  else if(phase==="spinning")c.innerHTML=`<button class="primary" disabled>The coffer churns…</button>`;
+  else if(phase==="offer")c.innerHTML=`<button class="take" id="take">Take it</button><button id="leave">Leave it</button>`;
+  else if(phase==="fled")c.innerHTML=`<button class="primary" id="follow">Find where it went</button>`;
+  $("spin")&&($("spin").onclick=spin);$("take")&&($("take").onclick=()=>finish(true));$("leave")&&($("leave").onclick=()=>finish(false));
+  $("follow")&&($("follow").onclick=()=>{$("stage").className="stage idle";phase="idle";$("desc").innerHTML=`<i>The coffer now rests at ${esc(st.loc)}. Its question mark glows again.</i>`;controls()});
+  $("loc").textContent=st.loc;$("costTag").textContent=st.cost+" gp a spin";
+  $("spins").textContent=st.spins;$("spent").textContent=st.spent.toLocaleString();
+}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function spin(){
+  const p=pool();if(!p.length){$("desc").textContent="Pick at least one category of item for the box.";return}
+  phase="spinning";st.spins++;st.spent+=st.cost;st.since++;save();controls();
+  const stage=$("stage");stage.className="stage open spinning";
+  $("desc").innerHTML="<i>The lid creaks up and a light pours out. Shapes flicker past, faster than you can name them…</i>";
+  // decide the outcome now
+  const fleeing=st.flee>0&&st.since>=3&&Math.random()<st.flee;
+  const result=fleeing?null:draw();
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let delay=reduce?250:55,elapsed=0,k=0;const total=reduce?600:4200;
+  (function tick(){
+    setReveal(p[Math.floor(Math.random()*p.length)],true);tone(SCALE[k++%SCALE.length],0,.18);
+    elapsed+=delay;delay*=reduce?1:1.085;
+    if(elapsed<total)setTimeout(tick,delay);else land(result);
+  })();
+}
+function land(it){
+  const stage=$("stage");stage.classList.remove("spinning");
+  if(!it){ // the box wanders off
+    $("glyph").innerHTML=G.skull;$("glyph").style.color="var(--danger)";$("rname").textContent="The coffer grins";$("rname").style.color="var(--danger)";
+    $("rmeta").textContent="Spin refunded";$("rmeta").style.color="var(--danger)";
+    tone(220,0,.5,"sawtooth",.06);tone(165,.25,.7,"sawtooth",.06);
+    const others=spotsList().filter(s=>s!==st.loc);const from=st.loc;st.loc=others.length?others[Math.floor(Math.random()*others.length)]:st.loc;
+    st.spent-=st.cost;st.since=0;st.log.unshift({fled:true,from,to:st.loc});save();
+    $("desc").innerHTML=`A grinning skull rises from the light and laughs. The coffer shudders, sprouts stubby legs and scuttles off. <b>Hand back the gold.</b>`;
+    setTimeout(()=>{stage.className="stage flee";phase="fled";controls();renderLog()},1400);
+    phase="fledwait";controls();$("ctrls").innerHTML="";renderLog();return;
+  }
+  current=it;setReveal(it,false);
+  [0,4,6].forEach((n,i)=>tone(SCALE[n]*(it[1]==="l"?1.5:1),i*.09,.6,"sine",.09));
+  $("desc").innerHTML=`${esc(it[4])}${it[5]?" <i>Requires attunement.</i>":""}`;
+  phase="offer";controls();
+}
+function finish(took){
+  st.log.unshift({name:current[0],rar:current[1],took,n:st.spins});save();renderLog();
+  $("stage").className="stage idle";phase="idle";
+  $("desc").innerHTML=took?`<i>${esc(current[0])} is yours. The lid snaps shut and the question mark flickers back to life.</i>`:`<i>The ${esc(current[0])} sinks back into the light. The lid closes.</i>`;
+  current=null;controls();
+}
+function renderLog(){
+  const L=st.log;
+  $("log").innerHTML=L.length?L.map(e=>e.fled?`<div><span class="n">✦</span><span class="fled">Wandered from ${esc(e.from)} to ${esc(e.to)}</span><span class="s" style="color:var(--danger)">refunded</span></div>`:
+    `<div><span class="n">#${e.n}</span><span style="${e.took?"":"text-decoration:line-through;color:var(--muted)"}">${esc(e.name)}</span><span class="s" style="color:var(${RAR[e.rar][1]})">${RAR[e.rar][0]}</span></div>`).join(""):`<p class="empty">Nothing yet. Every item the box hands out shows here. Left items are struck through.</p>`;
+}
+function renderSettings(){
+  document.querySelectorAll("#tier button").forEach(b=>b.setAttribute("aria-pressed",+b.dataset.v===st.tier));
+  $("cost").value=st.cost;$("flee").value=String(st.flee);$("spots").value=st.spots;
+  $("cats").innerHTML=CATS.map(([k,n])=>`<label><input type="checkbox" id="cat-${k}" data-k="${k}" ${st.cats[k]?"checked":""}> ${n}</label>`).join("");
+  const w=WEIGHTS[st.tier],tot=Object.values(w).reduce((a,b)=>a+b,0);
+  $("odds").innerHTML=Object.entries(w).map(([r,v])=>`<span style="width:${v/tot*100}%;background:var(${RAR[r][1]})"></span>`).join("");
+  $("legend").innerHTML=Object.entries(w).map(([r,v])=>`<span><b style="color:var(${RAR[r][1]})">${RAR[r][0]}</b> ${Math.round(v/tot*100)}%</span>`).join("");
+  $("sound").textContent="Sound: "+(st.sound?"on":"off");$("sound").setAttribute("aria-pressed",st.sound);
+}
+$("tier").onclick=e=>{const b=e.target.closest("button");if(!b)return;st.tier=+b.dataset.v;save();renderSettings()};
+$("cost").oninput=e=>{st.cost=Math.max(0,+e.target.value||0);save();controls()};
+$("flee").onchange=e=>{st.flee=+e.target.value;save()};
+$("cats").onchange=e=>{st.cats[e.target.dataset.k]=e.target.checked?1:0;save()};
+$("spots").oninput=e=>{st.spots=e.target.value;save()};
+$("sound").onclick=()=>{st.sound=!st.sound;save();renderSettings();tone(784,0,.3,"sine")};
+$("resetLog").onclick=()=>{st.log=[];st.spins=0;st.spent=0;st.since=0;save();renderLog();controls()};
+
+// opening state: show a sample of what the box holds
+setReveal(I.find(i=>i[0]==="Flame Tongue"),false);$("stage").className="stage idle";
+renderSettings();renderLog();controls();
+</script>
+</body></html>
